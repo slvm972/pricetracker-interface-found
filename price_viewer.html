@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>השוואת סל קניות / Сравнение корзины</title>
+<title>Price Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;600;700&family=Noto+Sans:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -12,608 +12,839 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font-family:'Noto Sans Hebrew',sans-serif;min-height:100vh;direction:rtl;}
+body.ltr{font-family:'Noto Sans',sans-serif;direction:ltr;}
 
-/* ── Header ── */
 header{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
 .logo{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--acc);}
 .logo b{color:var(--grn);}
+.upd{font-size:.72rem;color:var(--dim);}
+.lang-sw{display:flex;gap:4px;}
+.lang-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;font-weight:600;}
+.lang-btn.active{background:var(--acc);border-color:var(--acc);color:#0d1117;}
+.nav-modes{display:flex;gap:6px;margin-inline-start:auto;}
+.nav-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.82rem;cursor:pointer;font-family:inherit;}
+.nav-btn.on{border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.1);font-weight:700;}
+.basket-badge{display:inline-block;min-width:18px;padding:0 5px;margin-inline-start:4px;border-radius:9px;background:var(--grn);color:#0d1117;font-size:.7rem;font-weight:700;}
 
-/* ── Sections ── */
 .section{padding:16px 20px;border-bottom:1px solid var(--brd);}
-h2{font-size:.95rem;font-weight:600;margin-bottom:12px;color:var(--txt);}
-h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-right:6px;}
+h2{font-size:.95rem;font-weight:600;margin-bottom:12px;}
+h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6px;}
 
-/* ── Chain toggles ── */
 .chains-grid{display:flex;flex-wrap:wrap;gap:7px;}
 .chain-btn{padding:4px 11px;border-radius:8px;border:2px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;line-height:1.5;}
 .chain-btn.on{font-weight:700;border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.08);}
 .chain-btn:hover:not(.on){border-color:#555;color:var(--txt);}
 
-/* ── Search ── */
 .search-wrap{position:relative;max-width:520px;}
-#q{width:100%;padding:9px 14px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-size:.95rem;font-family:inherit;outline:none;transition:border-color .15s;}
-#q:focus{border-color:var(--acc);}
-#q::placeholder{color:var(--dim);}
-.suggestions{position:absolute;top:100%;right:0;left:0;background:var(--surf);border:1px solid var(--brd);border-top:none;border-radius:0 0 10px 10px;z-index:200;max-height:300px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.sug-item{padding:9px 14px;cursor:pointer;font-size:.87rem;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .1s;}
-.sug-item:last-child{border-bottom:none;}
-.sug-item:hover,.sug-item.focused{background:var(--surf2);}
-.sug-name{font-weight:500;line-height:1.35;flex:1;}
-.sug-meta{font-size:.7rem;color:var(--dim);white-space:nowrap;flex-shrink:0;}
-.sug-empty{padding:10px 14px;font-size:.85rem;color:var(--dim);}
+#q,#q-cat{width:100%;padding:9px 14px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-size:.95rem;font-family:inherit;outline:none;}
+#q:focus,#q-cat:focus{border-color:var(--acc);}
+#q::placeholder,#q-cat::placeholder{color:var(--dim);}
 
-/* ── Basket list ── */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;}
+.chip,.sb,.vb{padding:5px 12px;border-radius:14px;border:1px solid #444;background:#2d2d2d;color:#fff;font-size:12px;cursor:pointer;font-family:inherit;}
+.chip.on,.sb.on,.vb.on{border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.12);}
+.filter-badge{background:#2d2d2d;color:#fff;border:1px solid #444;padding:6px 14px;border-radius:15px;cursor:pointer;font-size:12px;font-family:inherit;}
+.filter-badge.on{border-color:var(--acc);color:var(--acc);}
+
+.gv{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:12px 14px;}
+.cn{font-size:.9rem;font-weight:600;margin-bottom:8px;line-height:1.35;}
+.price-row{display:flex;flex-wrap:wrap;gap:6px;}
+.price-cell{background:var(--surf2);border-radius:8px;padding:6px 8px;min-width:90px;}
+.price-cell.best{border:1px solid var(--grn);}
+.pc-chain{font-size:.68rem;margin-bottom:2px;}
+.pc-price{font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700;}
+.pc-diff{font-size:.68rem;}
+.pc-diff.up{color:var(--red);}
+.pc-diff.down{color:var(--grn);}
+.pc-unit{font-size:.65rem;color:var(--dim);}
+.saving{font-size:.75rem;color:var(--warn);margin-top:6px;}
+.btn-add{margin-top:10px;width:100%;padding:8px;border:none;border-radius:8px;background:var(--acc);color:#0d1117;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-add:hover{filter:brightness(1.08);}
+
+.cv{display:flex;flex-direction:column;gap:10px;}
+.crow{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:12px;}
+.crtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-weight:600;}
+.ctmeta{font-size:.75rem;color:var(--dim);font-weight:400;}
+.cells{display:flex;flex-wrap:wrap;gap:8px;}
+.cell{background:var(--surf2);border-radius:8px;padding:8px 10px;min-width:110px;}
+.cell.best{border:1px solid var(--grn);}
+.cch{font-size:.72rem;margin-bottom:4px;}
+.cpr{font-family:'Space Mono',monospace;font-weight:700;}
+.cdiff{font-size:.7rem;color:var(--dim);}
+.cdiff.ex{color:var(--red);}
+.cdiff.ch{color:var(--grn);}
+.nd{font-size:.75rem;color:var(--dim);}
+
+.pager{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;justify-content:center;}
+.pb{padding:6px 10px;border-radius:6px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt);cursor:pointer;font-family:inherit;}
+.pb.on{border-color:var(--acc);color:var(--acc);}
+
 .basket-list{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
 .basket-item{background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:10px;}
 .basket-item-info{flex:1;min-width:0;}
-.basket-item-name{font-size:.87rem;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.basket-item-name{font-size:.87rem;font-weight:500;line-height:1.3;}
 .basket-item-meta{font-size:.7rem;color:var(--dim);margin-top:2px;}
 .qty-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.qty-btn{width:26px;height:26px;border:1px solid var(--brd);border-radius:6px;background:var(--surf2);color:var(--txt);font-size:1rem;line-height:1;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
-.qty-btn:hover{border-color:var(--acc);color:var(--acc);}
+.qty-btn{width:26px;height:26px;border:1px solid var(--brd);border-radius:6px;background:var(--surf2);color:var(--txt);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .qty-val{font-family:'Space Mono',monospace;font-size:.85rem;min-width:24px;text-align:center;font-weight:600;}
-.btn-remove{border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:.9rem;padding:4px;flex-shrink:0;transition:color .15s;}
+.btn-remove{border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:.9rem;padding:4px;}
 .btn-remove:hover{color:var(--red);}
 .empty-msg{color:var(--dim);font-size:.87rem;padding:10px 0;}
 
-/* ── Results ── */
 .results{padding:16px 20px;}
-
-/* ── Best-network hero block ── */
 .best-hero{background:rgba(63,185,80,.07);border:1px solid var(--grn);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
-.bh-label{font-size:.72rem;color:var(--grn);font-weight:600;letter-spacing:.04em;margin-bottom:6px;}
+.bh-label{font-size:.72rem;color:var(--grn);font-weight:600;margin-bottom:6px;}
 .bh-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
-.bh-name{font-size:1.3rem;font-weight:700;color:var(--txt);}
+.bh-name{font-size:1.3rem;font-weight:700;}
 .bh-total{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--grn);}
 .bh-saving{font-size:.82rem;color:var(--warn);margin-top:5px;}
-
-/* ── Summary strip ── */
-.summary-strip{background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 16px;}
-.ss-item{}
-.ss-label{font-size:.68rem;color:var(--dim);margin-bottom:2px;}
-.ss-val{font-size:.88rem;font-weight:600;}
-.ss-val.accent{color:var(--warn);}
-
-/* ── Ranking list ── */
 .rank-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-.rank-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--brd);border-radius:9px;padding:10px 14px;transition:border-color .15s;}
+.rank-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--brd);border-radius:9px;padding:10px 14px;}
 .rank-row.rank-best{border-color:var(--grn);background:rgba(63,185,80,.04);}
 .rank-row.rank-nodata{opacity:.45;}
 .rank-num{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--dim);min-width:24px;}
 .rank-name{flex:1;font-weight:600;font-size:.9rem;}
 .rank-total{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;}
 .rank-total.best{color:var(--grn);}
-.rank-delta{font-size:.78rem;color:var(--dim);min-width:60px;text-align:left;}
+.rank-delta{font-size:.78rem;color:var(--dim);min-width:60px;}
 .rank-delta.pos{color:var(--warn);}
-.rank-missing{font-size:.68rem;color:var(--dim);min-width:50px;text-align:left;}
-
-/* ── Diff table ── */
 .diff-wrap{margin-top:4px;}
 .diff-head{font-size:.85rem;font-weight:600;margin-bottom:4px;}
 .diff-sub{font-size:.72rem;color:var(--dim);margin-bottom:10px;}
 .diff-table{width:100%;border-collapse:collapse;font-size:.84rem;}
-.diff-table th{text-align:right;padding:6px 10px;font-size:.7rem;color:var(--dim);font-weight:400;border-bottom:1px solid var(--brd);}
+.diff-table th{text-align:start;padding:6px 10px;font-size:.7rem;color:var(--dim);font-weight:400;border-bottom:1px solid var(--brd);}
 .diff-table td{padding:7px 10px;border-bottom:1px solid var(--brd);}
-.diff-table tr:last-child td{border-bottom:none;}
 .diff-mono{font-family:'Space Mono',monospace;}
 .diff-green{color:var(--grn);font-weight:600;}
 .diff-red{color:var(--red);}
-.diff-zero{color:var(--dim);}
-.diff-name{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-
-.placeholder{color:var(--dim);font-size:.87rem;padding:16px 0;}
-
-
-/* ── Этап 1: top best-offer panel ── */
-.top-offer{background:linear-gradient(135deg,rgba(63,185,80,.10) 0%,rgba(63,185,80,.04) 100%);border:1.5px solid var(--grn);border-radius:14px;padding:18px 20px;margin-bottom:16px;}
-.to-label{font-size:.68rem;font-weight:700;color:var(--grn);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
-.to-main{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
-.to-name{font-size:1.4rem;font-weight:700;}
-.to-price{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--grn);}
-.to-savings{display:flex;flex-wrap:wrap;gap:8px;}
-.to-pill{font-size:.78rem;padding:3px 10px;border-radius:20px;background:rgba(227,179,65,.12);border:1px solid rgba(227,179,65,.3);color:var(--warn);}
-
-/* ── Этап 3: coverage toggle ── */
 .coverage-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
 .toggle-label{font-size:.82rem;color:var(--dim);cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;}
 .toggle-cb{width:16px;height:16px;accent-color:var(--acc);cursor:pointer;}
 .coverage-note{font-size:.72rem;color:var(--dim);margin-top:4px;}
-
-/* ── Этап 4: price change badge ── */
-.price-change{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;margin-top:2px;}
-.pc-old{color:var(--dim);text-decoration:line-through;font-family:'Space Mono',monospace;}
-.pc-arrow{color:var(--dim);}
-.pc-pct{font-size:.68rem;padding:1px 5px;border-radius:4px;font-weight:600;}
-.pc-up{background:rgba(255,123,114,.15);color:var(--red);}
-.pc-down{background:rgba(63,185,80,.15);color:var(--grn);}
-
-/* ── Verdict block ── */
-.verdict{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-top:4px;}
-.vrd-icon{font-size:1.1rem;flex-shrink:0;width:28px;text-align:center;}
-.vrd-text{flex:1;}
-.vrd-main{font-size:.9rem;font-weight:700;margin-bottom:2px;}
-.vrd-sub{font-size:.75rem;opacity:.75;}
-.vrd-neutral{background:rgba(139,148,158,.10);border:1px solid rgba(139,148,158,.25);}
-.vrd-neutral .vrd-main{color:var(--dim);}
-.vrd-small{background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);}
-.vrd-small .vrd-main{color:var(--warn);}
-.vrd-good{background:rgba(63,185,80,.10);border:1px solid rgba(63,185,80,.3);}
-.vrd-good .vrd-main{color:var(--grn);}
-.vrd-strong{background:rgba(63,185,80,.15);border:1px solid var(--grn);}
-.vrd-strong .vrd-main{color:var(--grn);font-size:1rem;}
-
-/* Keyboard hint */
-.kb-hint{font-size:.7rem;color:var(--dim);margin-top:6px;}
+.hidden{display:none !important;}
+.meta-line{font-size:.78rem;color:var(--dim);margin:8px 0;}
+.secondary-btn{padding:8px 14px;border-radius:8px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt);cursor:pointer;font-family:inherit;font-size:.85rem;}
+.secondary-btn:hover{border-color:var(--acc);color:var(--acc);}
+.catalog-add-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px;}
+.cat-card{background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px;}
+.cat-card .t{font-size:.87rem;font-weight:500;margin-bottom:6px;line-height:1.3;}
+.cat-card .m{font-size:.7rem;color:var(--dim);margin-bottom:8px;}
 </style>
 </head>
 <body>
 
 <header>
   <span class="logo">🛒 <b>price</b>tracker</span>
-  <span style="font-size:.78rem;color:var(--dim)">04.06.2026 16:40</span>
+  <span class="upd" id="upd-label">—</span>
+  <div class="lang-sw">
+    <button type="button" class="lang-btn active" data-lang="he">עב</button>
+    <button type="button" class="lang-btn" data-lang="ru">RU</button>
+  </div>
+  <nav class="nav-modes">
+    <button type="button" class="nav-btn on" id="nav-catalog" data-t="navCatalog">Каталог</button>
+    <button type="button" class="nav-btn" id="nav-basket" data-t="navBasket">Корзина<span class="basket-badge hidden" id="basket-badge">0</span></button>
+  </nav>
 </header>
 
-<!-- Step 1: Networks -->
 <div class="section" id="sec-chains">
-  <h2>1. בחר רשתות <small>· Выберите сети</small></h2>
+  <h2 data-t="chooseChains">1. Выберите сети</h2>
   <div class="chains-grid" id="chains-grid"></div>
-  <div class="coverage-row">
+  <div class="coverage-row" id="coverage-row">
     <label class="toggle-label">
       <input type="checkbox" class="toggle-cb" id="full-cover-toggle">
-      הצג רק רשתות עם כיסוי מלא של הסל · Только сети с полным покрытием корзины
+      <span data-t="fullCover">Только сети с полным покрытием корзины</span>
     </label>
   </div>
   <div class="coverage-note" id="coverage-note" style="display:none"></div>
 </div>
 
-<!-- Step 2: Search & basket -->
-<div class="section">
-  <h2>2. הוסף מוצרים לסל <small>· Добавьте товары</small></h2>
-  <div class="search-wrap">
-    <input id="q" type="text" placeholder="חיפוש מוצר... / Поиск товара..." autocomplete="off" autocorrect="off" spellcheck="false">
-    <div class="suggestions" id="suggestions" style="display:none"></div>
-  </div>
-  <p class="kb-hint">↑↓ לניווט · Enter להוספה · Esc לסגירה</p>
-  <div class="basket-list" id="basket-list">
-    <div class="empty-msg" id="empty-msg">הסל ריק · Корзина пуста</div>
+<!-- MODE CATALOG -->
+<div id="mode-catalog">
+  <div class="section">
+    <h2 data-t="catalogTitle">2. Каталог — сравнение товаров</h2>
+    <div class="search-wrap">
+      <input id="q-cat" type="text" placeholder="" autocomplete="off">
+    </div>
+    <div class="toolbar" id="cat-chips"></div>
+    <div class="toolbar">
+      <span class="meta-line" data-t="sortLabel">Сортировка:</span>
+      <button type="button" class="sb on" data-s="multi" data-t="sortNetworks">По сетям ↓</button>
+      <button type="button" class="sb" data-s="save" data-t="sortSaving">По экономии ↓</button>
+      <button type="button" class="sb" data-s="asc" data-t="sortAsc">Цена ↑</button>
+      <button type="button" class="sb" data-s="desc" data-t="sortDesc">Цена ↓</button>
+      <button type="button" class="vb on" id="bg" data-t="viewGrid">Карточки</button>
+      <button type="button" class="vb" id="bc" data-t="viewCompare">Сравнение</button>
+    </div>
+    <div class="meta-line"><span id="cnt">0</span> <span data-t="results">результатов</span></div>
+    <div id="res" class="gv"></div>
+    <div class="pager" id="pg"></div>
   </div>
 </div>
 
-<!-- Top best-offer panel (Этап 1) -->
-<div id="top-offer-wrap"></div>
-<!-- Step 3+4+5: Results -->
-<div class="results" id="results"></div>
+<!-- MODE BASKET -->
+<div id="mode-basket" class="hidden">
+  <div class="section">
+    <h2 data-t="basketTitle">2. Добавьте товары в корзину</h2>
+    <div class="search-wrap">
+      <input id="q" type="text" placeholder="" autocomplete="off">
+    </div>
+    <div id="filter-container" style="margin:15px 0;display:flex;flex-direction:column;gap:10px;"></div>
+    <div class="catalog-add-grid" id="basket-catalog-grid"></div>
+    <div style="margin-top:12px;">
+      <button type="button" class="secondary-btn" id="btn-to-catalog" data-t="addMore">Добавить ещё товары</button>
+      <button type="button" class="secondary-btn" id="btn-clear-basket" data-t="clearBasket" style="margin-inline-start:8px;">Очистить корзину</button>
+    </div>
+    <div class="basket-list" id="basket-list">
+      <div class="empty-msg" id="empty-msg" data-t="basketEmpty">Корзина пуста</div>
+    </div>
+  </div>
+  <div class="results" id="results"></div>
+</div>
 
-<script>
-// ═══════════════════════════════════════════════════════════
-//  DATA (injected by make_viewer.py)
-// ═══════════════════════════════════════════════════════════
-</script>
 <script src="data.js"></script>
 <script>
-const ALL_CHAINS = [...new Set((typeof CATALOG !== 'undefined' ? CATALOG : []).flatMap(i => Object.keys(i.ch || {})))].sort();
+const LS_LANG = "pt_lang";
+const PG = 24;
 
-// STATE
-let basket = [];
-let selectedChains = new Set(ALL_CHAINS.slice(0, 6));
-let activeCategory = "";
-let activeBrand = "";
+const LANG = {
+  he: {
+    dir: "rtl", htmlLang: "he",
+    searchPlaceholder: "חיפוש מוצר... חלב, לחם, מיץ",
+    navCatalog: "קטלוג", navBasket: "סל",
+    chooseChains: "1. בחר רשתות",
+    fullCover: "הצג רק רשתות עם כיסוי מלא של הסל",
+    catalogTitle: "2. קטלוג — השוואת מוצרים",
+    basketTitle: "2. הוסף מוצרים לסל",
+    sortLabel: "מיון:",
+    sortNetworks: "מס׳ רשתות ↓", sortSaving: "חיסכון ↓",
+    sortAsc: "מחיר ↑", sortDesc: "מחיר ↓",
+    viewGrid: "📦 כרטיסיות", viewCompare: "⚖️ השוואה",
+    results: "תוצאות",
+    noResults: "לא נמצאו תוצאות", noData: "אין נתונים",
+    cheapest: "זול✓", cheapestLabel: "הכי זול",
+    moreExpensive: (n) => `+${n} ₪ יותר יקר`,
+    saving: (n) => `💰 חיסכון עד ${n} ₪`,
+    networks: "רשתות",
+    addToBasket: "לסל +",
+    addMore: "הוסף עוד מוצרים",
+    clearBasket: "רוקן סל",
+    basketEmpty: "הסל ריק",
+    recommend: "🏆 המלצה",
+    medianHead: "📊 מחירי ייחוס (חציון)",
+    medianSub: "השוואה לחציון. אדום = יקר ב־>20%",
+    rankHead: "דירוג רשתות",
+    coverageFull: "כיסוי מלא", coveragePartial: "חלקי",
+    noItems: "אין מוצרים",
+    totalBasket: "סיכום סל",
+    product: "מוצר", priceInChain: "מחיר ברשת", median: "חציון", overpay: "עודף",
+    catAll: "הכל",
+    filterCategories: "קטגוריות",
+    filterBrands: "מותגים",
+  },
+  ru: {
+    dir: "ltr", htmlLang: "ru",
+    searchPlaceholder: "Поиск товара... молоко, хлеб, сок",
+    navCatalog: "Каталог", navBasket: "Корзина",
+    chooseChains: "1. Выберите сети",
+    fullCover: "Только сети с полным покрытием корзины",
+    catalogTitle: "2. Каталог — сравнение товаров",
+    basketTitle: "2. Добавьте товары в корзину",
+    sortLabel: "Сортировка:",
+    sortNetworks: "По сетям ↓", sortSaving: "По экономии ↓",
+    sortAsc: "Цена ↑", sortDesc: "Цена ↓",
+    viewGrid: "📦 Карточки", viewCompare: "⚖️ Сравнение",
+    results: "результатов",
+    noResults: "Ничего не найдено", noData: "Нет данных",
+    cheapest: "Дёшево✓", cheapestLabel: "Дешевле всех",
+    moreExpensive: (n) => `+${n} ₪ дороже`,
+    saving: (n) => `💰 Экономия до ${n} ₪`,
+    networks: "сетей",
+    addToBasket: "В корзину +",
+    addMore: "Добавить ещё товары",
+    clearBasket: "Очистить корзину",
+    basketEmpty: "Корзина пуста",
+    recommend: "🏆 РЕКОМЕНДАЦИЯ",
+    medianHead: "📊 Эталонные цены (Медиана по всем сетям)",
+    medianSub: "Сравнение цены в выбранной сети с медианой. Красный = переплата >20%",
+    rankHead: "Рейтинг сетей",
+    coverageFull: "Полное покрытие", coveragePartial: "Частичное",
+    noItems: "нет товаров",
+    totalBasket: "Сводный итог корзины",
+    product: "Товар", priceInChain: "Цена в сети", median: "Медиана", overpay: "Переплата",
+    catAll: "Все",
+    filterCategories: "Категории",
+    filterBrands: "Бренды",
+  }
+};
 
-// Динамические списки фильтров
-let categories = ["Все"];
-let brands = [];
-
-// Карта популярных категорий на иврите с понятным переводом
 const CATEGORY_MAP = [
-    { name: "Молоко и сыры / חלב", keywords: ["חלב", "גבינ", "קוטג", "יוגורט", "חמאה", "שמנת"] },
-    { name: "Хлеб и выпечка / לחם", keywords: ["לחם", "פיתו", "לחמני", "עוגה", "עוגיו", "פתית"] },
-    { name: "Напитки и соки / שתייה", keywords: ["מים", "מיץ", "קולה", "משקה", "סודה", "בירה", "יין"] },
-    { name: "Бакалея и крупы / פסטה", keywords: ["אורז", "פסטה", "פתיתים", "קמח", "סוכר", "מלח", "שמן"] },
-    { name: "Кофе и чай / קפה", keywords: ["קפה", "תה", "נסקפה", "שוקולית"] },
-    { name: "Мясо и рыба / בשר", keywords: ["בשר", "עוף", "נקניק", "דג", "טונה", "נקניקיות"] },
-    { name: "Сладости и снэки / חטיפים", keywords: ["שוקולד", "חטיף", "במבה", "תפוצ'יפס", "סוכריות", "מסטיק"] },
-    { name: "Овощи и зелень / ירקות", keywords: ["עגבני", "מלפפון", "בצל", "תפוח", "גזר", "לקט"] },
-    { name: "Соусы и консервы / שימורים", keywords: ["רסק", "קטשופ", "מיונז", "רוטב", "זיתים", "תירס"] },
-    { name: "Косметика и уход / קוסמטיקה", keywords: ["שמפו", "סבון", "משחת", "דאודורנט", "קרם"] },
-    { name: "Бытовая химия / ניקוי", keywords: ["אבקת", "מרכך", "ג'ל", "ניקוי", "סמרטוט", "אקונומיקה"] },
-    { name: "Для детей / תינוקות", keywords: ["מטרנה", "סימילאק", "טיטול", "חיתול", "מגבונים"] }
+  { name: "Молоко и сыры / חלב", keywords: ["חלב","גבינ","קוטג","יוגורט","חמאה","שמנת"] },
+  { name: "Хлеб и выпечка / לחם", keywords: ["לחם","פיתו","לחמני","עוגה","עוגיו"] },
+  { name: "Напитки и соки / שתייה", keywords: ["מים","מיץ","קולה","משקה","סודה","בירה","יין"] },
+  { name: "Бакалея и крупы / פסטה", keywords: ["אורז","פסטה","פתיתים","קמח","סוכר","מלח","שמן"] },
+  { name: "Кофе и чай / קפה", keywords: ["קפה","תה","נסקפה"] },
+  { name: "Мясо и рыба / בשר", keywords: ["בשר","עוף","נקניק","דג","טונה"] },
+  { name: "Сладости и снэки / חטיפים", keywords: ["שוקולד","חטיף","במבה","סוכריות"] },
+  { name: "Овощи и зелень / ירקות", keywords: ["עגבני","מלפפון","בצל","תפוח","גזר"] },
+  { name: "Соусы и консервы / שימורים", keywords: ["רסק","קטשופ","מיונז","רוטב","זיתים"] },
+  { name: "Косметика и уход / קוסמטיקה", keywords: ["שמפו","סבון","משחת","דאודורנט","קרם"] },
+  { name: "Бытовая химия / ניקוי", keywords: ["אבקת","מרכך","ניקוי","אקונומיקה"] },
+  { name: "Для детей / תינוקות", keywords: ["מטרנה","סימילאק","טיטול","חיתול","מגבונים"] },
 ];
 
-window.addEventListener('DOMContentLoaded', () => {
-    // 1. Автоматически определяем, какие категории из карты реально присутствуют в CATALOG
-    const presentCategories = new Set();
-    CATALOG.forEach(item => {
-        const nameLower = item.n.toLowerCase();
-        CATEGORY_MAP.forEach(cat => {
-            if (cat.keywords.some(kw => nameLower.includes(kw))) {
-                presentCategories.add(cat.name);
-            }
-        });
-    });
-    categories = ["Все", ...CATEGORY_MAP.map(c => c.name).filter(name => presentCategories.has(name))];
+const CAT_CHIPS = [
+  {q:"", key:"catAll"},
+  {q:"חלב", label:"חלב / молоко"},
+  {q:"לחם", label:"לחם / хлеб"},
+  {q:"מיץ", label:"מיץ / сок"},
+  {q:"ביצ", label:"ביצים / яйца"},
+  {q:"גבינ", label:"גבינה / сыр"},
+  {q:"קפה", label:"קפה / кофе"},
+  {q:"שוקולד", label:"שוקולד / шоколад"},
+  {q:"מים", label:"מים / вода"},
+  {q:"אורז", label:"אורז / рис"},
+  {q:"עוף", label:"עוף / курица"},
+];
 
-    // 2. Автоматически собираем ТОП-15 популярных брендов из CATALOG
-    const brandCounts = {};
-    for (const item of CATALOG) {
-        const firstWord = item.n.trim().split(/\s+/)[0];
-        if (firstWord && firstWord.length > 2) {
-            brandCounts[firstWord] = (brandCounts[firstWord] || 0) + 1;
-        }
-    }
-    const topBrands = Object.entries(brandCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 40)
-        .map(([name]) => name);
-    brands = ["Все", ...topBrands];
+// ── Shared state ─────────────────────────────────────────────────
+const CATALOG_SAFE = (typeof CATALOG !== "undefined" && Array.isArray(CATALOG)) ? CATALOG : [];
+const ALL_CHAINS = [...new Set(CATALOG_SAFE.flatMap(i => Object.keys(i.ch || {})))].sort();
 
-    buildChainGrid();
-    buildFilterPanels();
-    renderCatalogGrid("");
-    renderBasket();
-    renderResults();
-    
-    const searchInput = document.getElementById('q');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            if (e.target.value.trim()) {
-                activeCategory = "";
-                activeBrand = "";
-                updateFilterButtonsHighlight();
-            }
-            renderCatalogGrid(e.target.value.trim());
-        });
-    }
-});
+let selectedChains = new Set(ALL_CHAINS.slice(0, Math.min(8, ALL_CHAINS.length)));
+let basket = []; // {c, qty}
+let appMode = "catalog"; // catalog | basket
+let lang = "he";
+try { lang = localStorage.getItem(LS_LANG) || "he"; } catch(e) {}
 
+let catQ = "";
+let catSrt = "multi";
+let catPg = 1;
+let catView = "grid"; // grid | compare
+let activeCategory = "";
+let activeBrand = "";
+let basketSearch = "";
+
+const norm = s => (s || "").toLowerCase();
+
+function L() { return LANG[lang] || LANG.ru; }
+
+function applyLang() {
+  const x = L();
+  document.documentElement.setAttribute("dir", x.dir);
+  document.documentElement.setAttribute("lang", x.htmlLang);
+  document.body.classList.toggle("ltr", lang === "ru");
+  const qCat = document.getElementById("q-cat");
+  const q = document.getElementById("q");
+  if (qCat) qCat.placeholder = x.searchPlaceholder;
+  if (q) q.placeholder = x.searchPlaceholder;
+  document.querySelectorAll("[data-t]").forEach(el => {
+    const k = el.dataset.t;
+    if (typeof x[k] === "string") el.textContent = x[k];
+  });
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+  // re-render mode content with new strings
+  if (appMode === "catalog") renderCatalog();
+  else { renderBasket(); renderBasketCatalog(); renderResults(); }
+}
+
+function updateBasketBadge() {
+  const n = basket.reduce((s, b) => s + b.qty, 0);
+  const el = document.getElementById("basket-badge");
+  if (!el) return;
+  el.textContent = String(n);
+  el.classList.toggle("hidden", n === 0);
+}
+
+function setMode(mode) {
+  appMode = mode;
+  document.getElementById("mode-catalog").classList.toggle("hidden", mode !== "catalog");
+  document.getElementById("mode-basket").classList.toggle("hidden", mode !== "basket");
+  document.getElementById("nav-catalog").classList.toggle("on", mode === "catalog");
+  document.getElementById("nav-basket").classList.toggle("on", mode === "basket");
+  document.getElementById("coverage-row").style.display = mode === "basket" ? "" : "none";
+  if (mode === "catalog") renderCatalog();
+  else { renderBasketCatalog(); renderBasket(); renderResults(); }
+}
+
+// ── Chains ───────────────────────────────────────────────────────
 function buildChainGrid() {
-    const grid = document.getElementById('chains-grid');
-    if (!grid) return;
-    grid.innerHTML = "";
-    ALL_CHAINS.forEach(ch => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'chain-btn' + (selectedChains.has(ch) ? ' on' : '');
-        btn.textContent = ch;
-        btn.onclick = () => {
-            if (selectedChains.has(ch)) {
-                if (selectedChains.size > 1) selectedChains.delete(ch);
-            } else {
-                selectedChains.add(ch);
-            }
-            btn.className = 'chain-btn' + (selectedChains.has(ch) ? ' on' : '');
-            renderBasket();
-            renderResults();
-        };
-        grid.appendChild(btn);
-    });
+  const grid = document.getElementById("chains-grid");
+  grid.innerHTML = "";
+  ALL_CHAINS.forEach(ch => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
+    btn.textContent = ch;
+    btn.onclick = () => {
+      if (selectedChains.has(ch)) {
+        if (selectedChains.size > 1) selectedChains.delete(ch);
+      } else selectedChains.add(ch);
+      btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
+      if (appMode === "catalog") { catPg = 1; renderCatalog(); }
+      else { renderBasket(); renderResults(); renderBasketCatalog(); }
+    };
+    grid.appendChild(btn);
+  });
 }
 
-function buildFilterPanels() {
-    let filterContainer = document.getElementById('filter-container');
-    if (!filterContainer) {
-        const searchWrap = document.querySelector('.search-wrap');
-        filterContainer = document.createElement('div');
-        filterContainer.id = 'filter-container';
-        filterContainer.style.cssText = "margin: 15px 0; display: flex; flex-direction: column; gap: 10px;";
-        searchWrap.after(filterContainer);
-    }
+function activeCh(row) {
+  const r = {};
+  for (const ch of selectedChains) if (row.ch && row.ch[ch] !== undefined) r[ch] = row.ch[ch];
+  return r;
+}
+const vals = ch => Object.values(ch);
+const minP = ch => Math.min(...vals(ch));
+const maxP = ch => Math.max(...vals(ch));
+const saveV = ch => vals(ch).length < 2 ? 0 : +(maxP(ch) - minP(ch)).toFixed(2);
 
-    const catHtml = `<div style="color: #aaa; font-size: 12px; font-weight: bold;">Категории товаров:</div>
-        <div id="cat-crumbs" style="display: flex; flex-wrap: wrap; gap: 6px; overflow-x: unset; white-space: normal; padding-bottom: 5px; scrollbar-width: thin;">` + 
-        categories.map(c => `<button type="button" class="filter-badge" data-cat="${c}" style="background: #2d2d2d; color: #fff; border: 1px solid #444; padding: 6px 14px; border-radius: 15px; cursor: pointer; flex-shrink: 0; white-space: nowrap; font-size: 12px; transition: 0.2s;">${c}</button>`).join('') + 
-        `</div>`;
-
-    const brandHtml = `<div style="color: #aaa; font-size: 12px; font-weight: bold; margin-top: 5px;">Популярные бренды:</div>
-        <div id="brand-crumbs" style="display: flex; flex-wrap: wrap; gap: 6px; overflow-x: unset; white-space: normal; padding-bottom: 5px; scrollbar-width: thin;">` + 
-        brands.map(b => `<button type="button" class="filter-badge" data-brand="${b}" style="background: #2d2d2d; color: #fff; border: 1px solid #444; padding: 6px 14px; border-radius: 15px; cursor: pointer; flex-shrink: 0; white-space: nowrap; font-size: 12px; transition: 0.2s;">${b}</button>`).join('') + 
-        `</div>`;
-
-    filterContainer.innerHTML = catHtml + brandHtml;
-
-    document.getElementById('cat-crumbs').addEventListener('click', (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const cat = btn.getAttribute('data-cat');
-        activeCategory = (cat === "Все") ? "" : cat;
-        document.getElementById('q').value = "";
-        updateFilterButtonsHighlight();
-        renderCatalogGrid("");
-    });
-
-    document.getElementById('brand-crumbs').addEventListener('click', (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const b = btn.getAttribute('data-brand');
-        activeBrand = (b === "Все") ? "" : b;
-        document.getElementById('q').value = "";
-        updateFilterButtonsHighlight();
-        renderCatalogGrid("");
-    });
-
-    updateFilterButtonsHighlight();
+// ── Catalog mode (from index) ────────────────────────────────────
+function filtCatalog() {
+  const ts = catQ.trim().split(/\s+/).filter(Boolean);
+  return CATALOG_SAFE.filter(r => {
+    const ch = activeCh(r);
+    if (!Object.keys(ch).length) return false;
+    if (ts.length && !ts.every(t => norm(r.n).includes(norm(t)) || norm(r.m).includes(norm(t)) || String(r.c).includes(t))) return false;
+    return true;
+  });
+}
+function doSort(arr) {
+  if (catSrt === "save") return [...arr].sort((a,b) => saveV(activeCh(b)) - saveV(activeCh(a)));
+  if (catSrt === "asc") return [...arr].sort((a,b) => minP(activeCh(a)) - minP(activeCh(b)));
+  if (catSrt === "desc") return [...arr].sort((a,b) => minP(activeCh(b)) - minP(activeCh(a)));
+  return [...arr].sort((a,b) => {
+    const da = Object.keys(activeCh(a)).length, db = Object.keys(activeCh(b)).length;
+    return db - da || minP(activeCh(a)) - minP(activeCh(b));
+  });
 }
 
-function updateFilterButtonsHighlight() {
-    document.querySelectorAll('#cat-crumbs button').forEach(b => {
-        const c = b.getAttribute('data-cat');
-        if ((c === "Все" && !activeCategory) || c === activeCategory) {
-            b.style.background = "#0e639c"; b.style.borderColor = "#007acc";
-        } else {
-            b.style.background = "#2d2d2d"; b.style.borderColor = "#444";
-        }
-    });
-    document.querySelectorAll('#brand-crumbs button').forEach(b => {
-        const br = b.getAttribute('data-brand');
-        if ((br === "Все" && !activeBrand) || br === activeBrand) {
-            b.style.background = "#238636"; b.style.borderColor = "#2ea44f";
-        } else {
-            b.style.background = "#2d2d2d"; b.style.borderColor = "#444";
-        }
-    });
+function renderGrid(sl) {
+  const x = L();
+  return sl.map((r,i) => {
+    const ch = activeCh(r), mp = minP(ch), sv = saveV(ch);
+    const cells = Object.entries(ch).map(([chain, price]) => {
+      const best = price === mp;
+      const prev = r.prev && r.prev[chain];
+      const diff = (prev !== undefined && prev !== null) ? price - prev : null;
+      const diffText = diff && Math.abs(diff) > 0.01 ? (diff > 0 ? `⬆ +${diff.toFixed(2)}` : `⬇ ${diff.toFixed(2)}`) : "";
+      return `<div class="price-cell${best?" best":""}">
+        <div class="pc-chain">${best?"✓ ":""}${chain}</div>
+        <div class="pc-price">${price} <span style="font-size:.7rem;color:var(--dim)">₪</span></div>
+        ${diffText?`<div class="pc-diff${diff>0?" up":" down"}">${diffText} ₪</div>`:""}
+        ${r.s?`<div class="pc-unit">${r.s}</div>`:""}
+      </div>`;
+    }).join("");
+    return `<div class="card">
+      <div class="cn">${escapeHtml(r.n)}</div>
+      <div class="price-row">${cells}</div>
+      ${sv>0.3?`<div class="saving">${x.saving(sv)}</div>`:""}
+      <button type="button" class="btn-add" data-add="${escapeAttr(r.c)}">${x.addToBasket}</button>
+    </div>`;
+  }).join("");
 }
 
-function renderCatalogGrid(query) {
-    let catalogWrap = document.getElementById('catalog-wrap');
-    if (!catalogWrap) {
-        const filterContainer = document.getElementById('filter-container');
-        catalogWrap = document.createElement('div');
-        catalogWrap.id = 'catalog-wrap';
-        catalogWrap.style.cssText = "display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:15px; margin: 15px 0; max-height:400px; overflow-y:auto; padding:10px; background:#1e1e1e; border-radius:8px;";
-        filterContainer.after(catalogWrap);
-    }
-
-    let filtered = CATALOG;
-
-    // 1. Поиск по тексту/штрихкоду
-    if (query) {
-        const q = query.toLowerCase();
-        filtered = filtered.filter(item => item.n.toLowerCase().includes(q) || item.c.includes(q));
-    }
-
-    // 2. Умная фильтрация по выбранной категории
-    if (activeCategory) {
-        const currentCatObj = CATEGORY_MAP.find(c => c.name === activeCategory);
-        if (currentCatObj) {
-            filtered = filtered.filter(item => {
-                const nameLower = item.n.toLowerCase();
-                return currentCatObj.keywords.some(kw => nameLower.includes(kw));
-            });
-        }
-    }
-
-    // 3. Фильтр по бренду
-    if (activeBrand) {
-        filtered = filtered.filter(item => item.m === activeBrand);
-    }
-
-    const displayList = filtered.slice(0, 60);
-
-    if (displayList.length === 0) {
-        catalogWrap.innerHTML = "<div style='color:#aaa; padding:10px;'>Ничего не найдено</div>";
-        return;
-    }
-
-    catalogWrap.innerHTML = displayList.map(item => `
-        <div style="background:#252526; border:1px solid #3c3c3c; padding:12px; border-radius:6px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;">
-            <div style="font-size:13px; font-weight:bold; color:#fff; direction:rtl; text-align:right;">${item.n}</div>
-            <div style="font-size:11px; color:#888; direction:rtl; text-align:right;">${item.m || 'Без бренда'} | ${item.s}</div>
-            <button type="button" onclick="addToBasket('${item.c}')" style="background:#0e639c; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px; width:100%;">
-                + Добавить
-            </button>
-        </div>
-    `).join('');
+function renderCompare(sl) {
+  const x = L();
+  const activeList = ALL_CHAINS.filter(ch => selectedChains.has(ch));
+  return sl.map(r => {
+    const ch = activeCh(r), mp = Object.keys(ch).length ? minP(ch) : 0, sv = saveV(ch);
+    const cells = activeList.map(chain => {
+      if (ch[chain] === undefined) return `<div class="cell"><div class="cch">${chain}</div><div class="nd">${x.noData}</div></div>`;
+      const price = ch[chain], best = price === mp, diff = +(price - mp).toFixed(2);
+      return `<div class="cell${best?" best":""}">
+        <div class="cch">${best?`<span style="background:var(--grn);color:#0d1117;padding:1px 6px;border-radius:8px;font-size:.62rem;">${x.cheapest}</span> `:""}${chain}</div>
+        <div class="cpr">${price} ₪</div>
+        ${r.s?`<div style="font-size:.65rem;color:var(--dim)">${escapeHtml(r.s)}</div>`:""}
+        ${diff>0?`<div class="cdiff ex">${x.moreExpensive(diff)}</div>`:`<div class="cdiff ch">${x.cheapestLabel}</div>`}
+      </div>`;
+    }).join("");
+    return `<div class="crow">
+      <div class="crtop">
+        <span>${escapeHtml(r.n)}</span>
+        <span class="ctmeta">
+          ${sv>0.3?`<span class="saving">${x.saving(sv)}</span> `:""}
+          ${Object.keys(ch).length}/${activeList.length} ${x.networks} · ${escapeHtml(String(r.c))}
+        </span>
+      </div>
+      <div class="cells">${cells}</div>
+      <button type="button" class="btn-add" data-add="${escapeAttr(r.c)}" style="margin-top:8px;max-width:220px;">${x.addToBasket}</button>
+    </div>`;
+  }).join("");
 }
 
-function addToBasket(barcode) {
-    const item = CATALOG.find(b => b.c === barcode);
-    if (!item) return;
-    const existing = basket.find(b => b.c === barcode);
-    if (existing) { existing.qty++; } else { basket.push({ c: barcode, qty: 1 }); }
-    renderBasket();
-    renderResults();
+function renderCatalog() {
+  const x = L();
+  const f = filtCatalog(), s = doSort(f), total = s.length;
+  const sl = s.slice((catPg-1)*PG, catPg*PG);
+  document.getElementById("cnt").textContent = total.toLocaleString();
+  const res = document.getElementById("res");
+  res.className = catView === "compare" ? "cv" : "gv";
+  res.innerHTML = sl.length
+    ? (catView === "compare" ? renderCompare(sl) : renderGrid(sl))
+    : `<div class="empty-msg">${x.noResults}</div>`;
+  res.querySelectorAll("[data-add]").forEach(btn => {
+    btn.onclick = () => { addToBasket(btn.getAttribute("data-add")); };
+  });
+  const pages = Math.ceil(total / PG);
+  const p = document.getElementById("pg");
+  if (pages <= 1) { p.innerHTML = ""; return; }
+  let b = "";
+  if (catPg > 1) b += `<button type="button" class="pb" data-go="${catPg-1}">‹</button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - catPg) <= 2)
+      b += `<button type="button" class="pb${i===catPg?" on":""}" data-go="${i}">${i}</button>`;
+    else if (Math.abs(i - catPg) === 3) b += `<span style="color:var(--dim)">…</span>`;
+  }
+  if (catPg < pages) b += `<button type="button" class="pb" data-go="${catPg+1}">›</button>`;
+  p.innerHTML = b;
+  p.querySelectorAll("[data-go]").forEach(btn => {
+    btn.onclick = () => { catPg = +btn.getAttribute("data-go"); renderCatalog(); window.scrollTo(0,0); };
+  });
 }
 
-function changeQty(barcode, delta) {
-    const item = basket.find(b => b.c === barcode);
-    if (!item) return;
-    item.qty += delta;
-    if (item.qty <= 0) { basket = basket.filter(b => b.c !== barcode); }
-    renderBasket();
-    renderResults();
+function buildCatChips() {
+  const el = document.getElementById("cat-chips");
+  el.innerHTML = CAT_CHIPS.map((c,i) => {
+    const label = c.key ? L()[c.key] : c.label;
+    return `<button type="button" class="chip${i===0?" on":""}" data-q="${escapeAttr(c.q)}">${label}</button>`;
+  }).join("");
+}
+
+// ── Basket mode (from price_viewer) ──────────────────────────────
+function addToBasket(code) {
+  const item = CATALOG_SAFE.find(c => String(c.c) === String(code));
+  if (!item) return;
+  const ex = basket.find(b => String(b.c) === String(code));
+  if (ex) ex.qty += 1;
+  else basket.push({ c: item.c, qty: 1 });
+  updateBasketBadge();
+  if (appMode === "basket") { renderBasket(); renderResults(); }
+}
+
+function changeQty(code, delta) {
+  const b = basket.find(x => String(x.c) === String(code));
+  if (!b) return;
+  b.qty += delta;
+  if (b.qty <= 0) basket = basket.filter(x => String(x.c) !== String(code));
+  updateBasketBadge();
+  renderBasket();
+  renderResults();
 }
 
 function renderBasket() {
-    const listEl = document.getElementById('basket-list');
-    const emptyMsg = document.getElementById('empty-msg');
-    if (!listEl) return;
+  const x = L();
+  const list = document.getElementById("basket-list");
+  if (!basket.length) {
+    list.innerHTML = `<div class="empty-msg">${x.basketEmpty}</div>`;
+    return;
+  }
+  list.innerHTML = basket.map(bItem => {
+    const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
+    const name = item ? item.n : bItem.c;
+    const meta = item ? (item.s || "") : "";
+    return `<div class="basket-item">
+      <div class="basket-item-info">
+        <div class="basket-item-name">${escapeHtml(name)}</div>
+        <div class="basket-item-meta">${escapeHtml(meta)}</div>
+      </div>
+      <div class="qty-wrap">
+        <button type="button" class="qty-btn" data-q="${escapeAttr(bItem.c)}" data-d="-1">−</button>
+        <span class="qty-val">${bItem.qty}</span>
+        <button type="button" class="qty-btn" data-q="${escapeAttr(bItem.c)}" data-d="1">+</button>
+      </div>
+      <button type="button" class="btn-remove" data-rm="${escapeAttr(bItem.c)}">✕</button>
+    </div>`;
+  }).join("");
+  list.querySelectorAll(".qty-btn").forEach(btn => {
+    btn.onclick = () => changeQty(btn.getAttribute("data-q"), +btn.getAttribute("data-d"));
+  });
+  list.querySelectorAll("[data-rm]").forEach(btn => {
+    btn.onclick = () => { basket = basket.filter(x => String(x.c) !== String(btn.getAttribute("data-rm"))); updateBasketBadge(); renderBasket(); renderResults(); };
+  });
+}
 
-    if (basket.length === 0) {
-        listEl.innerHTML = "";
-        if (emptyMsg) emptyMsg.style.display = 'block';
-        return;
+function matchCategory(item, catName) {
+  if (!catName || catName === "Все" || catName === L().catAll) return true;
+  const cat = CATEGORY_MAP.find(c => c.name === catName);
+  if (!cat) return true;
+  const nameLower = (item.n || "").toLowerCase();
+  return cat.keywords.some(kw => nameLower.includes(kw));
+}
+
+function renderBasketCatalog() {
+  const grid = document.getElementById("basket-catalog-grid");
+  if (!grid) return;
+  const q = basketSearch.trim().toLowerCase();
+  let items = CATALOG_SAFE.filter(item => {
+    const ch = activeCh(item);
+    if (!Object.keys(ch).length) return false;
+    if (q && !(norm(item.n).includes(q) || norm(item.m).includes(q) || String(item.c).includes(q))) return false;
+    if (activeCategory && !matchCategory(item, activeCategory)) return false;
+    if (activeBrand && activeBrand !== "Все" && activeBrand !== L().catAll) {
+      const first = (item.n || "").trim().split(/\s+/)[0];
+      if (first !== activeBrand) return false;
     }
-    if (emptyMsg) emptyMsg.style.display = 'none';
+    return true;
+  });
+  items = items.slice(0, 60);
+  const x = L();
+  grid.innerHTML = items.map(item => {
+    const mp = Object.keys(activeCh(item)).length ? minP(activeCh(item)) : "—";
+    return `<div class="cat-card">
+      <div class="t">${escapeHtml(item.n)}</div>
+      <div class="m">${escapeHtml(item.s||"")} · ${mp} ₪</div>
+      <button type="button" class="btn-add" data-add="${escapeAttr(item.c)}">${x.addToBasket}</button>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll("[data-add]").forEach(btn => {
+    btn.onclick = () => addToBasket(btn.getAttribute("data-add"));
+  });
+}
 
-    listEl.innerHTML = basket.map(bItem => {
-        const item = CATALOG.find(c => c.c === bItem.c);
-        if (!item) return '';
+function buildFilterPanels() {
+  const filterContainer = document.getElementById("filter-container");
+  if (!filterContainer) return;
+  const present = new Set();
+  CATALOG_SAFE.forEach(item => {
+    const nameLower = (item.n || "").toLowerCase();
+    CATEGORY_MAP.forEach(cat => {
+      if (cat.keywords.some(kw => nameLower.includes(kw))) present.add(cat.name);
+    });
+  });
+  const categories = [L().catAll, ...CATEGORY_MAP.map(c => c.name).filter(n => present.has(n))];
+  const brandCounts = {};
+  CATALOG_SAFE.forEach(item => {
+    const firstWord = (item.n || "").trim().split(/\s+/)[0];
+    if (firstWord && firstWord.length > 2) brandCounts[firstWord] = (brandCounts[firstWord] || 0) + 1;
+  });
+  const brands = [L().catAll, ...Object.entries(brandCounts).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([n])=>n)];
 
-        let rowsHtml = "";
-        selectedChains.forEach(ch => {
-            const price = item.ch[ch];
-            const priceText = price ? `${price.toFixed(2)} ₪` : '—';
-            const totalText = price ? `${(price * bItem.qty).toFixed(2)} ₪` : '—';
-            rowsHtml += `<tr><td style="padding:4px 0;">${ch}</td><td>${priceText}</td><td>${totalText}</td></tr>`;
-        });
+  filterContainer.innerHTML =
+    `<div style="color:#aaa;font-size:12px;font-weight:bold;">${L().filterCategories}</div>
+     <div id="cat-crumbs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+     <div style="color:#aaa;font-size:12px;font-weight:bold;margin-top:5px;">${L().filterBrands}</div>
+     <div id="brand-crumbs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>`;
 
-        return `
-            <div style="background:#2d2d2d; border-radius:6px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:start; gap:20px; border:1px solid #444;">
-                <div style="flex:1;">
-                    <strong style="color:#fff; font-size:16px; direction:rtl; display:block; text-align:right;">${item.n}</strong>
-                    <div style="color:#aaa; font-size:12px; margin-bottom:8px; direction:rtl; text-align:right;">${item.m} ${item.s}</div>
-                    <table style="width:100%; font-size:12px; border-collapse:collapse; color:#ccc; text-align:left;">
-                        <thead><tr style="border-bottom:1px solid #555;"><th>Сеть</th><th>Цена</th><th>Общий</th></tr></thead>
-                        <tbody>${rowsHtml}</tbody>
-                    </table>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px; background:#1e1e1e; padding:5px 10px; border-radius:4px; align-self:center;">
-                    <button type="button" onclick="changeQty('${bItem.c}', -1)" style="background:#444; color:#fff; border:none; width:24px; height:24px; cursor:pointer; font-weight:bold;">-</button>
-                    <span style="color:#fff; font-weight:bold; min-width:20px; text-align:center;">${bItem.qty}</span>
-                    <button type="button" onclick="changeQty('${bItem.c}', 1)" style="background:#444; color:#fff; border:none; width:24px; height:24px; cursor:pointer; font-weight:bold;">+</button>
-                    <button type="button" onclick="changeQty('${bItem.c}', -${bItem.qty})" style="background:#d9534f; color:#fff; border:none; padding:4px 8px; margin-left:10px; cursor:pointer; font-size:11px; border-radius:3px;">Удалить</button>
-                </div>
-            </div>
-        `;
-    }).join('');
+  const catEl = document.getElementById("cat-crumbs");
+  catEl.innerHTML = categories.map(c =>
+    `<button type="button" class="filter-badge${(!activeCategory && (c===L().catAll || c==="Все")) || activeCategory===c ? " on":""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}</button>`
+  ).join("");
+  catEl.querySelectorAll("[data-cat]").forEach(btn => {
+    btn.onclick = () => {
+      activeCategory = (btn.dataset.cat === L().catAll || btn.dataset.cat === "Все") ? "" : btn.dataset.cat;
+      renderBasketCatalog();
+      buildFilterPanels();
+    };
+  });
+  const brEl = document.getElementById("brand-crumbs");
+  brEl.innerHTML = brands.map(b =>
+    `<button type="button" class="filter-badge${(!activeBrand && (b===L().catAll||b==="Все")) || activeBrand===b ? " on":""}" data-brand="${escapeAttr(b)}">${escapeHtml(b)}</button>`
+  ).join("");
+  brEl.querySelectorAll("[data-brand]").forEach(btn => {
+    btn.onclick = () => {
+      activeBrand = (btn.dataset.brand === L().catAll || btn.dataset.brand === "Все") ? "" : btn.dataset.brand;
+      renderBasketCatalog();
+      buildFilterPanels();
+    };
+  });
+}
+
+function median(nums) {
+  if (!nums.length) return null;
+  const a = [...nums].sort((x,y)=>x-y);
+  const m = Math.floor(a.length/2);
+  return a.length % 2 ? a[m] : (a[m-1]+a[m])/2;
 }
 
 function renderResults() {
-    const resEl = document.getElementById('results');
-    if (!resEl) return;
+  const resEl = document.getElementById("results");
+  if (!resEl) return;
+  const x = L();
+  if (!basket.length) {
+    resEl.innerHTML = `<div style="color:#aaa;padding:10px;">${x.basketEmpty}</div>`;
+    return;
+  }
 
-    if (basket.length === 0) {
-        resEl.innerHTML = '<div style="color:#aaa; padding:10px;">Добавьте товары, чтобы сравнить стоимость.</div>';
-        return;
+  const fullOnly = document.getElementById("full-cover-toggle").checked;
+  let totals = [];
+  selectedChains.forEach(ch => {
+    let sum = 0, hasAll = true, found = 0;
+    for (let bItem of basket) {
+      const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
+      if (item && item.ch && item.ch[ch] != null) { sum += item.ch[ch] * bItem.qty; found += bItem.qty; }
+      else hasAll = false;
     }
+    totals.push({ chain: ch, total: sum, complete: hasAll, found });
+  });
+  if (fullOnly) totals = totals.filter(t => t.complete);
+  totals.sort((a,b) => (a.found ? a.total : Infinity) - (b.found ? b.total : Infinity));
 
-    let totals = [];
-    selectedChains.forEach(ch => {
-        let sum = 0;
-        let hasAll = true;
-        let found = 0;
-        for (let bItem of basket) {
-            const item = CATALOG.find(c => c.c === bItem.c);
-            if (item && item.ch[ch]) { sum += item.ch[ch] * bItem.qty; found += bItem.qty; } else { hasAll = false; }
-        }
-        totals.push({ chain: ch, total: sum, complete: hasAll, found });
+  let html = "";
+  if (totals.length > 0 && totals[0].found > 0) {
+    const best = totals[0];
+    const second = totals.find((t,i) => i > 0 && t.found > 0);
+    html += `<div class="best-hero"><div class="bh-label">${x.recommend}</div>
+      <div class="bh-row"><span class="bh-name">${escapeHtml(best.chain)}</span>
+      <span class="bh-total">${best.total.toFixed(2)} ₪</span></div>`;
+    if (second) {
+      const diff = second.total - best.total;
+      if (diff > 0 && diff < 5) html += `<div class="bh-saving">Δ &lt; 5 ₪</div>`;
+      else if (diff >= 20) html += `<div class="bh-saving">Δ ${diff.toFixed(2)} ₪</div>`;
+    }
+    html += `</div>`;
+  }
+
+  const bestChain = totals.length && totals[0].found ? totals[0].chain : null;
+  if (bestChain) {
+    html += `<div class="diff-wrap" style="margin-top:14px;">
+      <div class="diff-head">${x.medianHead}</div>
+      <div class="diff-sub">${x.medianSub}</div>
+      <table class="diff-table"><tr><th>${x.product}</th><th>${x.priceInChain}</th><th>${x.median}</th><th>${x.overpay}</th></tr>`;
+    basket.forEach(bItem => {
+      const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
+      if (!item) return;
+      const prices = ALL_CHAINS.map(ch => item.ch && item.ch[ch]).filter(v => v != null);
+      const med = median(prices);
+      const price = item.ch ? item.ch[bestChain] : null;
+      if (price == null || med == null) return;
+      const over = price - med;
+      const overPct = med > 0 ? (over / med) * 100 : 0;
+      const cls = overPct > 20 ? "diff-red" : (over < -0.01 ? "diff-green" : "");
+      html += `<tr><td>${escapeHtml(item.n)}</td>
+        <td class="diff-mono">${(price*bItem.qty).toFixed(2)}</td>
+        <td class="diff-mono">${(med*bItem.qty).toFixed(2)}</td>
+        <td class="diff-mono ${cls}">${over>=0?"+":""}${(over*bItem.qty).toFixed(2)} (${overPct.toFixed(0)}%)</td></tr>`;
     });
+    html += `</table></div>`;
+  }
 
-    totals.sort((a, b) => (a.total || Infinity) - (b.total || Infinity));
+  html += `<h3 style="margin-top:14px;">${x.totalBasket}:</h3>
+    <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+    <tr style="border-bottom:2px solid #555;"><th>${x.navBasket}</th><th></th><th></th></tr>`;
+  totals.forEach(t => {
+    const sumText = t.found > 0 ? `${t.total.toFixed(2)} ₪` : "—";
+    const statusText = t.complete ? `<span style="color:#5cb85c;">${x.coverageFull}</span>` : `<span style="color:#f0ad4e;">${x.coveragePartial}</span>`;
+    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;"><td><strong>${escapeHtml(t.chain)}</strong></td><td>${sumText}</td><td>${statusText}</td></tr>`;
+  });
+  html += `</table>`;
 
-    let html = '';
-
-    // ═══════════════════════════════════════════════════════════
-    // БЛОК 1: Рекомендация (Лучшая сеть)
-    // ═══════════════════════════════════════════════════════════
-    if (totals.length > 0) {
-        const best = totals[0];
-        const second = totals[1];
-        let recommendHtml = `<div class="best-hero">`;
-        recommendHtml += `<div class="bh-label">🏆 РЕКОМЕНДАЦИЯ</div>`;
-        recommendHtml += `<div class="bh-row">`;
-        recommendHtml += `<span class="bh-name">${best.chain}</span>`;
-        recommendHtml += `<span class="bh-total">${best.total.toFixed(2)} ₪</span>`;
-        recommendHtml += `</div>`;
-        if (second) {
-            const diff = second.total - best.total;
-            if (diff < 5 && diff > 0) {
-                recommendHtml += `<div class="bh-saving">разница минимальна</div>`;
-            } else if (diff >= 20) {
-                recommendHtml += `<div class="bh-saving">стоит рассмотреть альтернативы</div>`;
-            }
-        }
-        recommendHtml += `</div>`;
-        html += recommendHtml;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // БЛОК 2: Эталонные цены (Медиана)
-    // ═══════════════════════════════════════════════════════════
-    const bestChain = totals.length > 0 ? totals[0].chain : null;
-    if (bestChain) {
-        html += `<div class="diff-wrap" style="margin-top:14px;">`;
-        html += `<div class="diff-head">📊 Эталонные цены (Медиана по всем сетям)</div>`;
-        html += `<div class="diff-sub">Сравнение цены в выбранной сети с медианой. Красный = переплата >20%</div>`;
-        html += `<table class="diff-table">`;
-        html += `<tr><th>Товар</th><th>Цена в сети</th><th>Медиана</th><th>Статус</th></tr>`;
-        
-        basket.forEach(bItem => {
-            const item = CATALOG.find(c => c.c === bItem.c);
-            if (!item) return;
-
-            // Вычисляем медиану по всем сетям
-            const prices = Object.values(item.ch || {}).filter(p => p !== undefined).sort((a, b) => a - b);
-            let median = 0;
-            if (prices.length > 0) {
-                const mid = Math.floor(prices.length / 2);
-                median = prices.length % 2 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2;
-            }
-
-            const priceInBest = item.ch[bestChain];
-            const status = !priceInBest ? 'нет в сети' : 
-                          (priceInBest > median * 1.20 ? '⚠ переплата' : '✓ норма');
-            const statusColor = !priceInBest ? 'var(--dim)' : 
-                               (priceInBest > median * 1.20 ? 'var(--red)' : 'var(--grn)');
-
-            const priceBestTotal = priceInBest ? (priceInBest * bItem.qty).toFixed(2) : '—';
-            const medianTotal = median > 0 ? (median * bItem.qty).toFixed(2) : '—';
-
-            html += `<tr style="color:${statusColor};">`;
-            html += `<td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${item.n}</td>`;
-            html += `<td class="diff-mono">${priceBestTotal} ₪</td>`;
-            html += `<td class="diff-mono">${medianTotal} ₪</td>`;
-            html += `<td><strong>${status}</strong></td>`;
-            html += `</tr>`;
-        });
-        
-        html += `</table>`;
-        html += `</div>`;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // Краткий обзор (исходная таблица)
-    // ═══════════════════════════════════════════════════════════
-    html += `<h3 style="margin-bottom:10px; margin-top:14px;">Сводный итог корзины:</h3><table style="width:100%; border-collapse:collapse; margin-top:10px; color:#fff;">`;
-    html += `<tr style="border-bottom:2px solid #555; text-align:left;"><th>Сеть</th><th>Итоговая сумма корзины</th><th>Статус покрытия</th></tr>`;
-    
+  if (totals.length > 0) {
+    const best = totals.find(t => t.found > 0) || totals[0];
+    html += `<div style="margin-top:14px;"><h3 style="margin-bottom:10px;">${x.rankHead}:</h3><div class="rank-list">`;
+    let rank = 0;
     totals.forEach(t => {
-        const sumText = t.total > 0 ? `${t.total.toFixed(2)} ₪` : '—';
-        const statusText = t.complete ? '<span style="color:#5cb85c;">Полное покрытие</span>' : '<span style="color:#f0ad4e;">Частичное</span>';
-        html += `<tr style="border-bottom:1px solid #3c3c3c; height:35px;"><td><strong>${t.chain}</strong></td><td>${sumText}</td><td>${statusText}</td></tr>`;
+      if (t.found === 0) return;
+      rank++;
+      const delta = t.total - best.total;
+      const isBest = rank === 1;
+      html += `<div class="rank-row ${isBest?"rank-best":""}">
+        <span class="rank-num">#${rank}</span>
+        <span class="rank-name">${escapeHtml(t.chain)}</span>
+        <span class="rank-total ${isBest?"best":""}">${t.total.toFixed(2)} ₪</span>
+        ${delta>0.005?`<span class="rank-delta pos">+${delta.toFixed(2)} ₪</span>`:`<span class="rank-delta">✓</span>`}
+      </div>`;
     });
-    html += `</table>`;
-
-    // ═══════════════════════════════════════════════════════════
-    // БЛОК 3: Рейтинг сетей (исправленный)
-    // ═══════════════════════════════════════════════════════════
-    if (totals.length > 0) {
-        const best = totals[0];
-        html += `<div style="margin-top:14px;">`;
-        html += `<h3 style="margin-bottom:10px;">Рейтинг сетей:</h3>`;
-        html += `<div class="rank-list">`;
-        
-        totals.forEach((t, i) => {
-            if (t.found === 0) return; // Пропускаем сети без товаров
-            const delta = t.total - best.total;
-            const isBest = i === 0;
-            html += `<div class="rank-row ${isBest ? 'rank-best' : ''}">`;
-            html += `<span class="rank-num">#${i + 1}</span>`;
-            html += `<span class="rank-name">${t.chain}</span>`;
-            html += `<span class="rank-total ${isBest ? 'best' : ''}">${t.total.toFixed(2)} ₪</span>`;
-            if (delta > 0.005) {
-                html += `<span class="rank-delta pos">+${delta.toFixed(2)} ₪</span>`;
-            } else {
-                html += `<span class="rank-delta">✓</span>`;
-            }
-            html += `</div>`;
-        });
-
-        // Добавляем сети без товаров в конце серым
-        totals.forEach(t => {
-            if (t.found > 0) return; // Только сети без товаров
-            html += `<div class="rank-row rank-nodata">`;
-            html += `<span class="rank-num">—</span>`;
-            html += `<span class="rank-name">${t.chain}</span>`;
-            html += `<span style="font-size:.75rem;color:var(--dim)">нет товаров</span>`;
-            html += `</div>`;
-        });
-
-        html += `</div>`;
-        html += `</div>`;
-    }
-
-    resEl.innerHTML = html;
+    totals.forEach(t => {
+      if (t.found > 0) return;
+      html += `<div class="rank-row rank-nodata"><span class="rank-num">—</span>
+        <span class="rank-name">${escapeHtml(t.chain)}</span>
+        <span style="font-size:.75rem;color:var(--dim)">${x.noItems}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+  resEl.innerHTML = html;
 }
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+function escapeAttr(s) {
+  return String(s ?? "").replace(/"/g, "&quot;");
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+document.getElementById("upd-label").textContent = new Date().toLocaleString();
+
+document.querySelectorAll(".lang-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    lang = btn.dataset.lang;
+    try { localStorage.setItem(LS_LANG, lang); } catch(e) {}
+    applyLang();
+    buildCatChips();
+    buildFilterPanels();
+  });
+});
+
+document.getElementById("nav-catalog").onclick = () => setMode("catalog");
+document.getElementById("nav-basket").onclick = () => setMode("basket");
+document.getElementById("btn-to-catalog").onclick = () => setMode("catalog");
+document.getElementById("btn-clear-basket").onclick = () => {
+  basket = []; updateBasketBadge(); renderBasket(); renderResults();
+};
+document.getElementById("full-cover-toggle").onchange = () => renderResults();
+
+document.getElementById("q-cat").addEventListener("input", e => {
+  catQ = e.target.value; catPg = 1;
+  document.querySelectorAll("#cat-chips .chip").forEach(c => c.classList.remove("on"));
+  const all = document.querySelector('#cat-chips .chip[data-q=""]');
+  if (all) all.classList.add("on");
+  renderCatalog();
+});
+document.getElementById("cat-chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip");
+  if (!c) return;
+  document.querySelectorAll("#cat-chips .chip").forEach(x => x.classList.remove("on"));
+  c.classList.add("on");
+  catQ = c.dataset.q || "";
+  document.getElementById("q-cat").value = catQ;
+  catPg = 1; renderCatalog();
+});
+document.querySelector("#mode-catalog .toolbar:nth-of-type(2)")?.addEventListener("click", e => {
+  const s = e.target.closest(".sb");
+  if (s) {
+    document.querySelectorAll(".sb").forEach(x => x.classList.remove("on"));
+    s.classList.add("on"); catSrt = s.dataset.s; catPg = 1; renderCatalog();
+  }
+});
+document.getElementById("bg").onclick = () => {
+  catView = "grid";
+  document.getElementById("bg").classList.add("on");
+  document.getElementById("bc").classList.remove("on");
+  catPg = 1; renderCatalog();
+};
+document.getElementById("bc").onclick = () => {
+  catView = "compare";
+  document.getElementById("bc").classList.add("on");
+  document.getElementById("bg").classList.remove("on");
+  catPg = 1; renderCatalog();
+};
+// sort buttons via delegation on parent section
+document.querySelector("#mode-catalog").addEventListener("click", e => {
+  const s = e.target.closest(".sb");
+  if (s && s.dataset.s) {
+    document.querySelectorAll(".sb").forEach(x => x.classList.remove("on"));
+    s.classList.add("on"); catSrt = s.dataset.s; catPg = 1; renderCatalog();
+  }
+});
+
+let dbBasket;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(dbBasket);
+  dbBasket = setTimeout(() => {
+    basketSearch = e.target.value;
+    activeCategory = ""; activeBrand = "";
+    renderBasketCatalog();
+  }, 200);
+});
+
+buildChainGrid();
+buildCatChips();
+buildFilterPanels();
+applyLang();
+setMode("catalog");
+updateBasketBadge();
 </script>
 </body>
 </html>
