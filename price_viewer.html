@@ -347,33 +347,24 @@ const LANG = {
 };
 
 const CATEGORY_MAP = [
-  { name: "Молоко и сыры / חלב", keywords: ["חלב","גבינ","קוטג","יוגורט","חמאה","שמנת"] },
-  { name: "Хлеб и выпечка / לחם", keywords: ["לחם","פיתו","לחמני","עוגה","עוגיו"] },
-  { name: "Напитки и соки / שתייה", keywords: ["מים","מיץ","קולה","משקה","סודה","בירה","יין"] },
-  { name: "Бакалея и крупы / פסטה", keywords: ["אורז","פסטה","פתיתים","קמח","סוכר","מלח","שמן"] },
-  { name: "Кофе и чай / קפה", keywords: ["קפה","תה","נסקפה"] },
-  { name: "Мясо и рыба / בשר", keywords: ["בשר","עוף","נקניק","דג","טונה"] },
-  { name: "Сладости и снэки / חטיפים", keywords: ["שוקולד","חטיף","במבה","סוכריות"] },
-  { name: "Овощи и зелень / ירקות", keywords: ["עגבני","מלפפון","בצל","תפוח","גזר"] },
-  { name: "Соусы и консервы / שימורים", keywords: ["רסק","קטשופ","מיונז","רוטב","זיתים"] },
-  { name: "Косметика и уход / קוסמטיקה", keywords: ["שמפו","סבון","משחת","דאודורנט","קרם"] },
-  { name: "Бытовая химия / ניקוי", keywords: ["אבקת","מרכך","ניקוי","אקונומיקה"] },
-  { name: "Для детей / תינוקות", keywords: ["מטרנה","סימילאק","טיטול","חיתול","מגבונים"] },
+  { id: "dairy", nameRu: "Молоко и сыры", nameHe: "חלב וגבינות", keywords: ["חלב","גבינ","קוטג","יוגורט","חמאה","שמנת"] },
+  { id: "bread", nameRu: "Хлеб и выпечка", nameHe: "לחם ומאפים", keywords: ["לחם","פיתו","לחמני","עוגה","עוגיו"] },
+  { id: "drinks", nameRu: "Напитки и соки", nameHe: "שתייה ומיצים", keywords: ["מים","מיץ","קולה","משקה","סודה","בירה","יין"] },
+  { id: "grocery", nameRu: "Бакалея и крупы", nameHe: "מכולת ודגנים", keywords: ["אורז","פסטה","פתיתים","קמח","סוכר","מלח","שמן"] },
+  { id: "coffee", nameRu: "Кофе и чай", nameHe: "קפה ותה", keywords: ["קפה","תה","נסקפה"] },
+  { id: "meat", nameRu: "Мясо и рыба", nameHe: "בשר ודגים", keywords: ["בשר","עוף","נקניק","דג","טונה"] },
+  { id: "sweets", nameRu: "Сладости и снэки", nameHe: "מתוקים וחטיפים", keywords: ["שוקולד","חטיף","במבה","סוכריות"] },
+  { id: "veg", nameRu: "Овощи и зелень", nameHe: "ירקות", keywords: ["עגבני","מלפפון","בצל","תפוח","גזר"] },
+  { id: "sauce", nameRu: "Соусы и консервы", nameHe: "רטבים ושימורים", keywords: ["רסק","קטשופ","מיונז","רוטב","זיתים"] },
+  { id: "cosmo", nameRu: "Косметика и уход", nameHe: "קוסמטיקה", keywords: ["שמפו","סבון","משחת","דאודורנט","קרם"] },
+  { id: "clean", nameRu: "Бытовая химия", nameHe: "ניקוי", keywords: ["אבקת","מרכך","ניקוי","אקונומיקה"] },
+  { id: "baby", nameRu: "Для детей", nameHe: "לתינוקות", keywords: ["מטרנה","סימילאק","טיטול","חיתול","מגבונים"] },
 ];
 
-const CAT_CHIPS = [
-  {q:"", key:"catAll"},
-  {q:"חלב", label:"חלב / молоко"},
-  {q:"לחם", label:"לחם / хлеб"},
-  {q:"מיץ", label:"מיץ / сок"},
-  {q:"ביצ", label:"ביצים / яйца"},
-  {q:"גבינ", label:"גבינה / сыр"},
-  {q:"קפה", label:"קפה / кофе"},
-  {q:"שוקולד", label:"שוקולד / шоколад"},
-  {q:"מים", label:"מים / вода"},
-  {q:"אורז", label:"אורז / рис"},
-  {q:"עוף", label:"עוף / курица"},
-];
+function categoryLabel(cat) {
+  if (!cat) return "";
+  return lang === "he" ? cat.nameHe : cat.nameRu;
+}
 
 // ── Shared state ─────────────────────────────────────────────────
 const CATALOG_SAFE = (typeof CATALOG !== "undefined" && Array.isArray(CATALOG)) ? CATALOG : [];
@@ -475,6 +466,7 @@ function filtCatalog() {
   return CATALOG_SAFE.filter(r => {
     const ch = activeCh(r);
     if (!Object.keys(ch).length) return false;
+    if (activeCategory && !matchCategory(r, activeCategory)) return false;
     if (ts.length && !ts.every(t => norm(r.n).includes(norm(t)) || norm(r.m).includes(norm(t)) || String(r.c).includes(t))) return false;
     return true;
   });
@@ -575,10 +567,13 @@ function renderCatalog() {
 
 function buildCatChips() {
   const el = document.getElementById("cat-chips");
-  el.innerHTML = CAT_CHIPS.map((c,i) => {
-    const label = c.key ? L()[c.key] : c.label;
-    return `<button type="button" class="chip${i===0?" on":""}" data-q="${escapeAttr(c.q)}">${label}</button>`;
-  }).join("");
+  if (!el) return;
+  let html = `<button type="button" class="chip${!activeCategory ? " on" : ""}" data-cat="">${L().catAll}</button>`;
+  CATEGORY_MAP.forEach(cat => {
+    const on = activeCategory === cat.id ? " on" : "";
+    html += `<button type="button" class="chip${on}" data-cat="${escapeAttr(cat.id)}">${escapeHtml(categoryLabel(cat))}</button>`;
+  });
+  el.innerHTML = html;
 }
 
 // ── Basket mode (from price_viewer) ──────────────────────────────
@@ -634,12 +629,12 @@ function renderBasket() {
   });
 }
 
-function matchCategory(item, catName) {
-  if (!catName || catName === "Все" || catName === L().catAll) return true;
-  const cat = CATEGORY_MAP.find(c => c.name === catName);
+function matchCategory(item, catId) {
+  if (!catId) return true;
+  const cat = CATEGORY_MAP.find(c => c.id === catId || c.name === catId || c.nameRu === catId || c.nameHe === catId);
   if (!cat) return true;
   const nameLower = (item.n || "").toLowerCase();
-  return cat.keywords.some(kw => nameLower.includes(kw));
+  return cat.keywords.some(kw => nameLower.includes(kw.toLowerCase()));
 }
 
 function renderBasketCatalog() {
@@ -679,10 +674,10 @@ function buildFilterPanels() {
   CATALOG_SAFE.forEach(item => {
     const nameLower = (item.n || "").toLowerCase();
     CATEGORY_MAP.forEach(cat => {
-      if (cat.keywords.some(kw => nameLower.includes(kw))) present.add(cat.name);
+      if (cat.keywords.some(kw => nameLower.includes(kw.toLowerCase()))) present.add(cat.id);
     });
   });
-  const categories = [L().catAll, ...CATEGORY_MAP.map(c => c.name).filter(n => present.has(n))];
+  const categories = [{ id: "", label: L().catAll }, ...CATEGORY_MAP.filter(c => present.has(c.id)).map(c => ({ id: c.id, label: categoryLabel(c) }))];
   const brandCounts = {};
   CATALOG_SAFE.forEach(item => {
     const firstWord = (item.n || "").trim().split(/\s+/)[0];
@@ -698,13 +693,14 @@ function buildFilterPanels() {
 
   const catEl = document.getElementById("cat-crumbs");
   catEl.innerHTML = categories.map(c =>
-    `<button type="button" class="filter-badge${(!activeCategory && (c===L().catAll || c==="Все")) || activeCategory===c ? " on":""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}</button>`
+    `<button type="button" class="filter-badge${activeCategory === c.id ? " on" : (!c.id && !activeCategory ? " on" : "")}" data-cat="${escapeAttr(c.id)}">${escapeHtml(c.label)}</button>`
   ).join("");
   catEl.querySelectorAll("[data-cat]").forEach(btn => {
     btn.onclick = () => {
-      activeCategory = (btn.dataset.cat === L().catAll || btn.dataset.cat === "Все") ? "" : btn.dataset.cat;
+      activeCategory = btn.dataset.cat || "";
       renderBasketCatalog();
       buildFilterPanels();
+      buildCatChips();
     };
   });
   const brEl = document.getElementById("brand-crumbs");
@@ -890,20 +886,21 @@ document.getElementById("btn-clear-basket").onclick = () => {
 document.getElementById("full-cover-toggle").onchange = () => renderResults();
 
 document.getElementById("q-cat").addEventListener("input", e => {
-  catQ = e.target.value; catPg = 1;
-  document.querySelectorAll("#cat-chips .chip").forEach(c => c.classList.remove("on"));
-  const all = document.querySelector('#cat-chips .chip[data-q=""]');
-  if (all) all.classList.add("on");
+  catQ = e.target.value;
+  catPg = 1;
   renderCatalog();
 });
 document.getElementById("cat-chips").addEventListener("click", e => {
   const c = e.target.closest(".chip");
   if (!c) return;
-  document.querySelectorAll("#cat-chips .chip").forEach(x => x.classList.remove("on"));
-  c.classList.add("on");
-  catQ = c.dataset.q || "";
-  document.getElementById("q-cat").value = catQ;
-  catPg = 1; renderCatalog();
+  activeCategory = c.dataset.cat || "";
+  buildCatChips();
+  catPg = 1;
+  renderCatalog();
+  if (appMode === "basket") {
+    renderBasketCatalog();
+    buildFilterPanels();
+  }
 });
 document.querySelector("#mode-catalog .toolbar:nth-of-type(2)")?.addEventListener("click", e => {
   const s = e.target.closest(".sb");
