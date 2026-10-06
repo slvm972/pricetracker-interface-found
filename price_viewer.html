@@ -279,6 +279,7 @@ const LANG = {
     catAll: "הכל",
     filterCategories: "קטגוריות",
     filterBrands: "מותגים",
+    dataUpdated: "הנתונים עודכנו",
     helpBtn: "איך משתמשים?",
     helpTitle: "איך להשתמש בשירות",
     helpFlow1: "① קטלוג",
@@ -327,6 +328,7 @@ const LANG = {
     catAll: "Все",
     filterCategories: "Категории",
     filterBrands: "Бренды",
+    dataUpdated: "Данные обновлены",
     helpBtn: "Как пользоваться?",
     helpTitle: "Как пользоваться сервисом",
     helpFlow1: "① Каталог",
@@ -412,6 +414,7 @@ function applyLang() {
     btn.classList.toggle("active", btn.dataset.lang === lang);
   });
   // re-render mode content with new strings
+  setUpdateLabel();
   if (appMode === "catalog") renderCatalog();
   else { renderBasket(); renderBasketCatalog(); renderResults(); }
 }
@@ -831,7 +834,27 @@ function escapeAttr(s) {
 }
 
 // ── Init ─────────────────────────────────────────────────────────
-document.getElementById("upd-label").textContent = new Date().toLocaleString();
+function formatCatalogUpdated(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+  // "YYYY-MM-DD HH:MM:SS" or ISO
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (m) return m[3] + "." + m[2] + "." + m[1] + " " + m[4] + ":" + m[5];
+  return s;
+}
+function setUpdateLabel() {
+  const el = document.getElementById("upd-label");
+  if (!el) return;
+  const raw = (typeof CATALOG_UPDATED !== "undefined") ? CATALOG_UPDATED : null;
+  const formatted = formatCatalogUpdated(raw);
+  if (!formatted) {
+    el.textContent = "—";
+    return;
+  }
+  const prefix = (L().dataUpdated || "").trim();
+  el.textContent = prefix ? (prefix + ": " + formatted) : formatted;
+}
+setUpdateLabel();
 
 document.querySelectorAll(".lang-btn").forEach(btn => {
   btn.addEventListener("click", () => {
