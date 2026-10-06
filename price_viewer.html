@@ -646,7 +646,7 @@ function renderBasketCatalog() {
     if (!Object.keys(ch).length) return false;
     if (q && !(norm(item.n).includes(q) || norm(item.m).includes(q) || String(item.c).includes(q))) return false;
     if (activeCategory && !matchCategory(item, activeCategory)) return false;
-    if (activeBrand && activeBrand !== "Все" && activeBrand !== L().catAll) {
+    if (activeBrand && activeBrand !== L().catAll) {
       const first = (item.n || "").trim().split(/\s+/)[0];
       if (first !== activeBrand) return false;
     }
@@ -705,11 +705,11 @@ function buildFilterPanels() {
   });
   const brEl = document.getElementById("brand-crumbs");
   brEl.innerHTML = brands.map(b =>
-    `<button type="button" class="filter-badge${(!activeBrand && (b===L().catAll||b==="Все")) || activeBrand===b ? " on":""}" data-brand="${escapeAttr(b)}">${escapeHtml(b)}</button>`
+    `<button type="button" class="filter-badge${(!activeBrand && b===L().catAll) || activeBrand===b ? " on":""}" data-brand="${escapeAttr(b)}">${escapeHtml(b)}</button>`
   ).join("");
   brEl.querySelectorAll("[data-brand]").forEach(btn => {
     btn.onclick = () => {
-      activeBrand = (btn.dataset.brand === L().catAll || btn.dataset.brand === "Все") ? "" : btn.dataset.brand;
+      activeBrand = (btn.dataset.brand === L().catAll) ? "" : btn.dataset.brand;
       renderBasketCatalog();
       buildFilterPanels();
     };
