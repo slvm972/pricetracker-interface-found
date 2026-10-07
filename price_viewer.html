@@ -610,6 +610,47 @@ function matchCategory(item, catId) {
 const CATALOG_SAFE = (typeof CATALOG !== "undefined" && Array.isArray(CATALOG)) ? CATALOG : [];
 const ALL_CHAINS = [...new Set(CATALOG_SAFE.flatMap(i => Object.keys(i.ch || {})))].sort();
 
+/** Display names for UI only. Keys stay as in data.js (ch). */
+const CHAIN_LABELS = {
+  Bareket:                 { ru: "Барекет", he: "ברקת" },
+  CityMarketShops:         { ru: "Сити Маркет", he: "סיטי מרקט" },
+  DorAlon:                 { ru: "Дор Алон", he: "דור אלון" },
+  FreshMarketAndSuperDosh: { ru: "Фреш Маркет / Супер Дош", he: "פרש מרקט / סופר דוש" },
+  HaziHinam:               { ru: "Хаци Хинам", he: "חצי חינם" },
+  HetCohenNewSource:       { ru: "Хет Коэн", he: "ח. כהן" },
+  Keshet:                  { ru: "Кешет", he: "קשת" },
+  KingStore:               { ru: "Кинг Стор", he: "קינג סטור" },
+  Maayan2000:              { ru: "Мааян 2000", he: "מעין 2000" },
+  MahsaniAShukNewSource:   { ru: "Махсаней а-Шук", he: "מחסני השוק" },
+  MeshnatYosef1:           { ru: "Машне Йосеф 1", he: "משנת יוסף 1" },
+  MeshnatYosef2:           { ru: "Машне Йосеф 2", he: "משנת יוסף 2" },
+  Osherad:                 { ru: "Ошер ад", he: "אושר עד" },
+  Polizer:                 { ru: "Полицер", he: "פוליצר" },
+  RamiLevy:                { ru: "Рами Леви", he: "רמי לוי" },
+  SalachDabach:            { ru: "Салах Дабах", he: "סלאח דבאח" },
+  ShefaBarcartAshem:       { ru: "Шефа / Баркат а-Шем", he: "שפע / ברכת השם" },
+  Shufersal:               { ru: "Шуферсаль", he: "שופרסל" },
+  ShukAhir:                { ru: "Шук а-Ир", he: "שוק העיר" },
+  StopMarket:              { ru: "Стоп Маркет", he: "סטופ מרקט" },
+  SuperPharm:              { ru: "Супер-Фарм", he: "סופר-פארם" },
+  SuperYuda:               { ru: "Супер Юда", he: "סופר יודה" },
+  TivTaam:                 { ru: "Тив Таам", he: "טיב טעם" },
+  VictoryNewSource:        { ru: "Виктори", he: "ויקטורי" },
+  Wolt:                    { ru: "Wolt", he: "וולט" },
+  YaynotBitanAndCarrefour: { ru: "Енот Битан / Carrefour", he: "יינות ביתן / קרפור" },
+  Yellow:                  { ru: "Yellow", he: "ילו" },
+  Yohananof:               { ru: "Йоханоф", he: "יוחננוף" },
+  ZolVeBegadol:            { ru: "Золь ве-бе-гадоль", he: "זול ובגדול" }
+};
+
+function chainLabel(id) {
+  if (!id) return "";
+  const row = CHAIN_LABELS[id];
+  if (!row) return id;
+  return lang === "he" ? (row.he || id) : (row.ru || id);
+}
+
+
 /** Product count per chain in CATALOG (for default selection). */
 const CHAIN_PRODUCT_COUNT = (() => {
   const m = Object.create(null);
@@ -683,8 +724,10 @@ function applyLang() {
   });
   // re-render mode content with new strings
   setUpdateLabel();
+  buildChainGrid();
+  buildCatChips();
   if (appMode === "catalog") renderCatalog();
-  else { renderBasket(); renderBasketCatalog(); renderResults(); }
+  else { renderBasket(); renderBasketCatalog(); buildFilterPanels(); renderResults(); }
 }
 
 function updateBasketBadge() {
@@ -714,9 +757,11 @@ function buildChainGrid() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
-    btn.textContent = ch;
+    btn.textContent = chainLabel(ch);
+    btn.dataset.chain = ch;
     const cnt = CHAIN_PRODUCT_COUNT[ch] || 0;
-    btn.title = cnt ? (ch + ": " + cnt.toLocaleString() + " " + (lang === "he" ? "מוצרים" : "товаров")) : ch;
+    const label = chainLabel(ch);
+    btn.title = cnt ? (label + " (" + ch + "): " + cnt.toLocaleString() + " " + (lang === "he" ? "מוצרים" : "товаров")) : label;
     btn.onclick = () => {
       if (selectedChains.has(ch)) {
         if (selectedChains.size > 1) selectedChains.delete(ch);
@@ -770,7 +815,7 @@ function renderGrid(sl) {
       const diff = (prev !== undefined && prev !== null) ? price - prev : null;
       const diffText = diff && Math.abs(diff) > 0.01 ? (diff > 0 ? `⬆ +${diff.toFixed(2)}` : `⬇ ${diff.toFixed(2)}`) : "";
       return `<div class="price-cell${best?" best":""}">
-        <div class="pc-chain">${best?"✓ ":""}${chain}</div>
+        <div class="pc-chain">${best?"✓ ":""}${escapeHtml(chainLabel(chain))}</div>
         <div class="pc-price">${price} <span style="font-size:.7rem;color:var(--dim)">₪</span></div>
         ${diffText?`<div class="pc-diff${diff>0?" up":" down"}">${diffText} ₪</div>`:""}
         ${r.s?`<div class="pc-unit">${r.s}</div>`:""}
@@ -791,10 +836,10 @@ function renderCompare(sl) {
   return sl.map(r => {
     const ch = activeCh(r), mp = Object.keys(ch).length ? minP(ch) : 0, sv = saveV(ch);
     const cells = activeList.map(chain => {
-      if (ch[chain] === undefined) return `<div class="cell"><div class="cch">${chain}</div><div class="nd">${x.noData}</div></div>`;
+      if (ch[chain] === undefined) return `<div class="cell"><div class="cch">${escapeHtml(chainLabel(chain))}</div><div class="nd">${x.noData}</div></div>`;
       const price = ch[chain], best = price === mp, diff = +(price - mp).toFixed(2);
       return `<div class="cell${best?" best":""}">
-        <div class="cch">${best?`<span style="background:var(--grn);color:#0d1117;padding:1px 6px;border-radius:8px;font-size:.62rem;">${x.cheapest}</span> `:""}${chain}</div>
+        <div class="cch">${best?`<span style="background:var(--grn);color:#0d1117;padding:1px 6px;border-radius:8px;font-size:.62rem;">${x.cheapest}</span> `:""}${escapeHtml(chainLabel(chain))}</div>
         <div class="cpr">${price} ₪</div>
         ${r.s?`<div style="font-size:.65rem;color:var(--dim)">${escapeHtml(r.s)}</div>`:""}
         ${diff>0?`<div class="cdiff ex">${x.moreExpensive(diff)}</div>`:`<div class="cdiff ch">${x.cheapestLabel}</div>`}
@@ -1021,7 +1066,7 @@ function renderResults() {
     const best = totals[0];
     const second = totals.find((t,i) => i > 0 && t.found > 0);
     html += `<div class="best-hero"><div class="bh-label">${x.recommend}</div>
-      <div class="bh-row"><span class="bh-name">${escapeHtml(best.chain)}</span>
+      <div class="bh-row"><span class="bh-name">${escapeHtml(chainLabel(best.chain))}</span>
       <span class="bh-total">${best.total.toFixed(2)} ₪</span></div>`;
     if (second) {
       const diff = second.total - best.total;
@@ -1061,7 +1106,7 @@ function renderResults() {
   totals.forEach(t => {
     const sumText = t.found > 0 ? `${t.total.toFixed(2)} ₪` : "—";
     const statusText = t.complete ? `<span style="color:#5cb85c;">${x.coverageFull}</span>` : `<span style="color:#f0ad4e;">${x.coveragePartial}</span>`;
-    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;"><td><strong>${escapeHtml(t.chain)}</strong></td><td>${sumText}</td><td>${statusText}</td></tr>`;
+    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;"><td><strong>${escapeHtml(chainLabel(t.chain))}</strong></td><td>${sumText}</td><td>${statusText}</td></tr>`;
   });
   html += `</table>`;
 
@@ -1076,7 +1121,7 @@ function renderResults() {
       const isBest = rank === 1;
       html += `<div class="rank-row ${isBest?"rank-best":""}">
         <span class="rank-num">#${rank}</span>
-        <span class="rank-name">${escapeHtml(t.chain)}</span>
+        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}</span>
         <span class="rank-total ${isBest?"best":""}">${t.total.toFixed(2)} ₪</span>
         ${delta>0.005?`<span class="rank-delta pos">+${delta.toFixed(2)} ₪</span>`:`<span class="rank-delta">✓</span>`}
       </div>`;
@@ -1084,7 +1129,7 @@ function renderResults() {
     totals.forEach(t => {
       if (t.found > 0) return;
       html += `<div class="rank-row rank-nodata"><span class="rank-num">—</span>
-        <span class="rank-name">${escapeHtml(t.chain)}</span>
+        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}</span>
         <span style="font-size:.75rem;color:var(--dim)">${x.noItems}</span></div>`;
     });
     html += `</div></div>`;
