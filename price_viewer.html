@@ -46,6 +46,12 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 
 .chains-grid{display:flex;flex-wrap:wrap;gap:7px;}
 .chains-hint{margin-top:8px;font-size:.78rem;color:var(--dim);line-height:1.45;max-width:52rem;}
+.chain-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}
+.chain-act-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt);font-size:.78rem;cursor:pointer;font-family:inherit;}
+.chain-act-btn:hover{border-color:var(--acc);color:var(--acc);}
+.chain-act-btn.primary{border-color:var(--acc);color:var(--acc);}
+.chain-save-msg{font-size:.75rem;color:var(--grn);opacity:0;transition:opacity .2s;}
+.chain-save-msg.show{opacity:1;}
 .chain-btn{padding:4px 11px;border-radius:8px;border:2px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;line-height:1.5;}
 .chain-btn.on{font-weight:700;border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.08);}
 .chain-btn:hover:not(.on){border-color:#555;color:var(--txt);}
@@ -166,6 +172,11 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 <div class="section" id="sec-chains">
   <h2 data-t="chooseChains">1. Выберите сети</h2>
   <div class="chains-grid" id="chains-grid"></div>
+  <div class="chain-actions" id="chain-actions">
+    <button type="button" class="chain-act-btn primary" id="btn-save-chains" data-t="saveChains">Сохранить сети</button>
+    <button type="button" class="chain-act-btn" id="btn-reset-chains" data-t="resetChains">Сбросить</button>
+    <span class="chain-save-msg" id="chain-save-msg" aria-live="polite"></span>
+  </div>
   <p class="chains-hint" id="chains-hint" data-t="chainsHint">По умолчанию включены сети с наибольшим числом товаров. Остальные можно добавить нажатием.</p>
   <div class="coverage-row" id="coverage-row">
     <label class="toggle-label">
@@ -255,6 +266,9 @@ const LANG = {
     navCatalog: "קטלוג", navBasket: "סל",
     chooseChains: "1. בחר רשתות",
     chainsHint: "כברירת מחדל מסומנות הרשתות עם הכי הרבה מוצרים. אפשר להוסיף אחרות בלחיצה.",
+    saveChains: "שמור רשתות",
+    resetChains: "איפוס",
+    chainsSaved: "נשמר",
     fullCover: "הצג רק רשתות עם כיסוי מלא של הסל",
     catalogTitle: "2. קטלוג — השוואת מוצרים",
     basketTitle: "2. הוסף מוצרים לסל",
@@ -305,6 +319,9 @@ const LANG = {
     navCatalog: "Каталог", navBasket: "Корзина",
     chooseChains: "1. Выберите сети",
     chainsHint: "По умолчанию включены сети с наибольшим числом товаров. Остальные можно добавить нажатием.",
+    saveChains: "Сохранить сети",
+    resetChains: "Сбросить",
+    chainsSaved: "Сохранено",
     fullCover: "Только сети с полным покрытием корзины",
     catalogTitle: "2. Каталог — сравнение товаров",
     basketTitle: "2. Добавьте товары в корзину",
@@ -769,6 +786,29 @@ function setMode(mode) {
 }
 
 // ── Chains ───────────────────────────────────────────────────────
+
+function flashChainsSaved() {
+  const el = document.getElementById("chain-save-msg");
+  if (!el) return;
+  el.textContent = L().chainsSaved || "OK";
+  el.classList.add("show");
+  clearTimeout(flashChainsSaved._t);
+  flashChainsSaved._t = setTimeout(() => el.classList.remove("show"), 1500);
+}
+function resetSelectedChains() {
+  selectedChains = pickDefaultChains();
+  saveSelectedChains();
+  buildChainGrid();
+  if (appMode === "catalog") { catPg = 1; renderCatalog(); }
+  else { renderBasket(); renderResults(); renderBasketCatalog(); }
+}
+function wireChainActionButtons() {
+  const saveBtn = document.getElementById("btn-save-chains");
+  const resetBtn = document.getElementById("btn-reset-chains");
+  if (saveBtn) saveBtn.onclick = () => { saveSelectedChains(); flashChainsSaved(); };
+  if (resetBtn) resetBtn.onclick = () => resetSelectedChains();
+}
+
 function buildChainGrid() {
   const grid = document.getElementById("chains-grid");
   grid.innerHTML = "";
