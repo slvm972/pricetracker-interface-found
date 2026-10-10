@@ -245,6 +245,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 <script src="data.js"></script>
 <script>
 const LS_LANG = "pt_lang";
+const LS_CHAINS = "pt_chains";
 const PG = 24;
 
 const LANG = {
@@ -690,7 +691,23 @@ function pickDefaultChains() {
   return new Set(picked.map(x => x.name));
 }
 
-let selectedChains = pickDefaultChains();
+function loadSelectedChains() {
+  try {
+    const raw = localStorage.getItem(LS_CHAINS);
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || !arr.length) return null;
+    const valid = arr.filter(id => ALL_CHAINS.includes(id));
+    if (!valid.length) return null;
+    return new Set(valid);
+  } catch (e) { return null; }
+}
+function saveSelectedChains() {
+  try {
+    localStorage.setItem(LS_CHAINS, JSON.stringify([...selectedChains]));
+  } catch (e) {}
+}
+let selectedChains = loadSelectedChains() || pickDefaultChains();
 let basket = []; // {c, qty}
 let appMode = "catalog"; // catalog | basket
 let lang = "he";
@@ -768,6 +785,7 @@ function buildChainGrid() {
       if (selectedChains.has(ch)) {
         if (selectedChains.size > 1) selectedChains.delete(ch);
       } else selectedChains.add(ch);
+      saveSelectedChains();
       btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
       if (appMode === "catalog") { catPg = 1; renderCatalog(); }
       else { renderBasket(); renderResults(); renderBasketCatalog(); }
