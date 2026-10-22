@@ -793,8 +793,33 @@ function saveSelectedChains() {
 let selectedChains = loadSelectedChains() || pickDefaultChains();
 let basket = []; // {c, qty}
 let appMode = "catalog"; // catalog | basket
-let lang = "he";
-try { lang = localStorage.getItem(LS_LANG) || "he"; } catch(e) {}
+
+/** First visit: OS/browser language. Saved choice in localStorage wins later. */
+function detectLangFromSystem() {
+  try {
+    const list = [];
+    if (typeof navigator !== "undefined") {
+      if (navigator.languages && navigator.languages.length) {
+        for (let i = 0; i < navigator.languages.length; i++) list.push(navigator.languages[i]);
+      }
+      if (navigator.language) list.push(navigator.language);
+      if (navigator.userLanguage) list.push(navigator.userLanguage);
+    }
+    for (let i = 0; i < list.length; i++) {
+      const code = String(list[i] || "").toLowerCase().replace("_", "-");
+      const primary = code.split("-")[0];
+      if (primary === "ru") return "ru";
+      if (primary === "he" || primary === "iw") return "he";
+    }
+  } catch (e) {}
+  return "en";
+}
+
+let lang = detectLangFromSystem();
+try {
+  const saved = localStorage.getItem(LS_LANG);
+  if (saved === "ru" || saved === "he" || saved === "en") lang = saved;
+} catch (e) {}
 
 let catQ = "";
 let catSrt = "multi";
