@@ -169,6 +169,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
   <div class="lang-sw">
     <button type="button" class="lang-btn active" data-lang="he">עב</button>
     <button type="button" class="lang-btn" data-lang="ru">RU</button>
+    <button type="button" class="lang-btn" data-lang="en">EN</button>
   </div>
   <button type="button" class="help-btn" id="help-btn" data-t="helpBtn">Как пользоваться?</button>
   <nav class="nav-modes">
@@ -373,24 +374,77 @@ const LANG = {
     helpStep5: "Посмотрите экономию — вы увидите разницу в стоимости и сможете выбрать наиболее выгодный вариант.",
     helpTip: "💡 Совет: сначала соберите нужные товары в «Каталоге», затем перейдите в «Корзину» для сравнения всей покупки.",
     helpClose: "Закрыть",
+  },
+  en: {
+    dir: "ltr", htmlLang: "en",
+    searchPlaceholder: "Search product... milk, bread, juice",
+    navCatalog: "Catalog", navBasket: "Basket",
+    chooseChains: "1. Choose chains",
+    chainsHint: "By default, chains with the most products are selected. Tap to add others.",
+    saveChains: "Save chains",
+    resetChains: "Reset",
+    chainsSaved: "Saved",
+    fullCover: "Only chains with full basket coverage",
+    catalogTitle: "2. Catalog — compare products",
+    basketTitle: "2. Add products to basket",
+    sortLabel: "Sort:",
+    sortNetworks: "By chains ↓", sortSaving: "By savings ↓",
+    sortAsc: "Price ↑", sortDesc: "Price ↓",
+    viewGrid: "📦 Cards", viewCompare: "⚖️ Compare",
+    results: "results",
+    noResults: "No results found", noData: "No data",
+    cheapest: "Cheap✓", cheapestLabel: "Cheapest",
+    moreExpensive: (n) => `+${n} ₪ more`,
+    saving: (n) => `💰 Save up to ${n} ₪`,
+    networks: "chains",
+    addToBasket: "Add to basket +",
+    addMore: "Add more products",
+    clearBasket: "Clear basket",
+    basketEmpty: "Basket is empty",
+    recommend: "🏆 RECOMMENDED",
+    medianHead: "📊 Reference prices (median across chains)",
+    medianSub: "Compare chain price to median. Red = overpay >20%",
+    rankHead: "Chain ranking",
+    coverageFull: "Full coverage", coveragePartial: "Partial",
+    noItems: "no products",
+    totalBasket: "Basket summary",
+    product: "Product", priceInChain: "Price in chain", median: "Median", overpay: "Overpay",
+    catAll: "All",
+    filterCategories: "Categories",
+    filterBrands: "Brands",
+    dataUpdated: "Data updated",
+    helpBtn: "How to use?",
+    helpTitle: "How to use this service",
+    helpFlow1: "① Catalog",
+    helpFlow2: "② Add items",
+    helpFlow3: "③ Basket",
+    helpFlow4: "④ Compare",
+    helpFlow5: "⑤ Save money",
+    helpStep1: "Find products — in Catalog search items and compare prices across chains.",
+    helpStep2: "Add to basket — tap «Add to basket» on each item. Adjust quantity if needed.",
+    helpStep3: "Open Basket — all selected items appear there automatically.",
+    helpStep4: "Compare options — the service totals your basket in each chain and shows where it is cheaper.",
+    helpStep5: "See the savings — check the price difference and pick the best option.",
+    helpTip: "💡 Tip: first collect products in Catalog, then open Basket to compare the whole purchase.",
+    helpClose: "Close",
   }
 };
 
 const CATEGORY_MAP = [
-  { id: "dairy", nameRu: "Молочные продукты", nameHe: "מוצרי חלב" },
-  { id: "bakery", nameRu: "Хлеб и выпечка", nameHe: "לחם ומאפים" },
-  { id: "drinks", nameRu: "Напитки", nameHe: "שתייה" },
-  { id: "grocery", nameRu: "Бакалея и крупы", nameHe: "מכולת ודגנים" },
-  { id: "coffee_tea", nameRu: "Кофе и чай", nameHe: "קפה ותה" },
-  { id: "meat_fish", nameRu: "Мясо, птица, рыба", nameHe: "בשר, עוף ודגים" },
-  { id: "ready", nameRu: "Готовая еда и салаты", nameHe: "מוכן וסלטים" },
-  { id: "produce", nameRu: "Овощи и фрукты", nameHe: "ירקות ופירות" },
-  { id: "snacks", nameRu: "Сладости и снеки", nameHe: "מתוקים וחטיפים" },
-  { id: "sauces", nameRu: "Соусы и консервы", nameHe: "רטבים ושימורים" },
-  { id: "baby", nameRu: "Детское", nameHe: "לתינוקות" },
-  { id: "personal_care", nameRu: "Гигиена и уход", nameHe: "היגיינה וטיפוח" },
-  { id: "household", nameRu: "Быт и уборка", nameHe: "ניקיון ובית" },
-  { id: "other", nameRu: "Прочее", nameHe: "אחר" }
+  { id: "dairy", nameRu: "Молочные продукты", nameHe: "מוצרי חלב", nameEn: "Dairy" },
+  { id: "bakery", nameRu: "Хлеб и выпечка", nameHe: "לחם ומאפים", nameEn: "Bread & bakery" },
+  { id: "drinks", nameRu: "Напитки", nameHe: "שתייה", nameEn: "Drinks" },
+  { id: "grocery", nameRu: "Бакалея и крупы", nameHe: "מכולת ודגנים", nameEn: "Groceries & grains" },
+  { id: "coffee_tea", nameRu: "Кофе и чай", nameHe: "קפה ותה", nameEn: "Coffee & tea" },
+  { id: "meat_fish", nameRu: "Мясо, птица, рыба", nameHe: "בשר, עוף ודגים", nameEn: "Meat, poultry & fish" },
+  { id: "ready", nameRu: "Готовая еда и салаты", nameHe: "מוכן וסלטים", nameEn: "Ready meals & salads" },
+  { id: "produce", nameRu: "Овощи и фрукты", nameHe: "ירקות ופירות", nameEn: "Fruit & vegetables" },
+  { id: "snacks", nameRu: "Сладости и снеки", nameHe: "מתוקים וחטיפים", nameEn: "Sweets & snacks" },
+  { id: "sauces", nameRu: "Соусы и консервы", nameHe: "רטבים ושימורים", nameEn: "Sauces & canned" },
+  { id: "baby", nameRu: "Детское", nameHe: "לתינוקות", nameEn: "Baby" },
+  { id: "personal_care", nameRu: "Гигиена и уход", nameHe: "היגיינה וטיפוח", nameEn: "Personal care" },
+  { id: "household", nameRu: "Быт и уборка", nameHe: "ניקיון ובית", nameEn: "Household & cleaning" },
+  { id: "other", nameRu: "Прочее", nameHe: "אחר", nameEn: "Other" }
 ];
 
 const CATEGORY_PRIORITY = [
@@ -407,7 +461,9 @@ function categoryLabel(cat) {
     cat = CATEGORY_MAP.find(c => c.id === cat);
     if (!cat) return "";
   }
-  return lang === "he" ? cat.nameHe : cat.nameRu;
+  if (lang === "he") return cat.nameHe || cat.nameRu || cat.id;
+  if (lang === "en") return cat.nameEn || cat.nameRu || cat.id;
+  return cat.nameRu || cat.nameEn || cat.id;
 }
 
 function normalizeName(s) {
@@ -638,44 +694,46 @@ const ALL_CHAINS = [...new Set(CATALOG_SAFE.flatMap(i => Object.keys(i.ch || {})
 
 /** Display names for UI only. Keys stay as in data.js (ch). */
 const CHAIN_LABELS = {
-  Bareket:                 { ru: "Барекет", he: "ברקת" },
-  CityMarketShops:         { ru: "Сити Маркет", he: "סיטי מרקט" },
-  DorAlon:                 { ru: "Дор Алон", he: "דור אלון" },
-  GoodPharm:               { ru: "Гуд Фарм", he: "גוד פארם" },
-  FreshMarketAndSuperDosh: { ru: "Фреш Маркет / Супер Дош", he: "פרש מרקט / סופר דוש" },
-  HaziHinam:               { ru: "Хаци Хинам", he: "חצי חינם" },
-  HetCohenNewSource:       { ru: "Хет Коэн", he: "ח. כהן" },
-  Keshet:                  { ru: "Кешет", he: "קשת" },
-  KingStore:               { ru: "Кинг Стор", he: "קינג סטור" },
-  Maayan2000:              { ru: "Мааян 2000", he: "מעין 2000" },
-  MahsaniAShukNewSource:   { ru: "Махсаней а-Шук", he: "מחסני השוק" },
-  MeshnatYosef1:           { ru: "Машне Йосеф 1", he: "משנת יוסף 1" },
-  MeshnatYosef2:           { ru: "Машне Йосеф 2", he: "משנת יוסף 2" },
-  Osherad:                 { ru: "Ошер ад", he: "אושר עד" },
-  Polizer:                 { ru: "Полицер", he: "פוליצר" },
-  RamiLevy:                { ru: "Рами Леви", he: "רמי לוי" },
-  SalachDabach:            { ru: "Салах Дабах", he: "סלאח דבאח" },
-  ShefaBarcartAshem:       { ru: "Шефа / Баркат а-Шем", he: "שפע / ברכת השם" },
-  Shufersal:               { ru: "Шуферсаль", he: "שופרסל" },
-  ShukAhir:                { ru: "Шук а-Ир", he: "שוק העיר" },
-  StopMarket:              { ru: "Стоп Маркет", he: "סטופ מרקט" },
-  SuperPharm:              { ru: "Супер-Фарм", he: "סופר-פארם" },
-  SuperSapir:              { ru: "Супер Сапир", he: "סופר ספיר" },
-  SuperYuda:               { ru: "Супер Юда", he: "סופר יודה" },
-  TivTaam:                 { ru: "Тив Таам", he: "טיב טעם" },
-  VictoryNewSource:        { ru: "Виктори", he: "ויקטורי" },
-  Wolt:                    { ru: "Wolt", he: "וולט" },
-  YaynotBitanAndCarrefour: { ru: "Енот Битан / Carrefour", he: "יינות ביתן / קרפור" },
-  Yellow:                  { ru: "Yellow", he: "ילו" },
-  Yohananof:               { ru: "Йоханоф", he: "יוחננוף" },
-  ZolVeBegadol:            { ru: "Золь ве-бе-гадоль", he: "זול ובגדול" }
+  Bareket:                 { ru: "Барекет", he: "ברקת", en: "Bareket" },
+  CityMarketShops:         { ru: "Сити Маркет", he: "סיטי מרקט", en: "City Market" },
+  DorAlon:                 { ru: "Дор Алон", he: "דור אלון", en: "Dor Alon" },
+  GoodPharm:               { ru: "Гуд Фарм", he: "גוד פארם", en: "Good Pharm" },
+  FreshMarketAndSuperDosh: { ru: "Фреш Маркет / Супер Дош", he: "פרש מרקט / סופר דוש", en: "Fresh Market / Super Dosh" },
+  HaziHinam:               { ru: "Хаци Хинам", he: "חצי חינם", en: "Hazi Hinam" },
+  HetCohenNewSource:       { ru: "Хет Коэн", he: "ח. כהן", en: "Het Cohen" },
+  Keshet:                  { ru: "Кешет", he: "קשת", en: "Keshet" },
+  KingStore:               { ru: "Кинг Стор", he: "קינג סטור", en: "King Store" },
+  Maayan2000:              { ru: "Мааян 2000", he: "מעין 2000", en: "Maayan 2000" },
+  MahsaniAShukNewSource:   { ru: "Махсаней а-Шук", he: "מחסני השוק", en: "Machsanei HaShuk" },
+  MeshnatYosef1:           { ru: "Машне Йосеф 1", he: "משנת יוסף 1", en: "Mishnat Yosef 1" },
+  MeshnatYosef2:           { ru: "Машне Йосеф 2", he: "משנת יוסף 2", en: "Mishnat Yosef 2" },
+  Osherad:                 { ru: "Ошер ад", he: "אושר עד", en: "Osher Ad" },
+  Polizer:                 { ru: "Полицер", he: "פוליצר", en: "Polizer" },
+  RamiLevy:                { ru: "Рами Леви", he: "רמי לוי", en: "Rami Levy" },
+  SalachDabach:            { ru: "Салах Дабах", he: "סלאח דבאח", en: "Salach Dabach" },
+  ShefaBarcartAshem:       { ru: "Шефа / Баркат а-Шем", he: "שפע / ברכת השם", en: "Shefa / Birkat HaShem" },
+  Shufersal:               { ru: "Шуферсаль", he: "שופרסל", en: "Shufersal" },
+  ShukAhir:                { ru: "Шук а-Ир", he: "שוק העיר", en: "Shuk HaIr" },
+  StopMarket:              { ru: "Стоп Маркет", he: "סטופ מרקט", en: "Stop Market" },
+  SuperPharm:              { ru: "Супер-Фарм", he: "סופר-פארם", en: "Super-Pharm" },
+  SuperSapir:              { ru: "Супер Сапир", he: "סופר ספיר", en: "Super Sapir" },
+  SuperYuda:               { ru: "Супер Юда", he: "סופר יודה", en: "Super Yuda" },
+  TivTaam:                 { ru: "Тив Таам", he: "טיב טעם", en: "Tiv Taam" },
+  VictoryNewSource:        { ru: "Виктори", he: "ויקטורי", en: "Victory" },
+  Wolt:                    { ru: "Wolt", he: "וולט", en: "Wolt" },
+  YaynotBitanAndCarrefour: { ru: "Енот Битан / Carrefour", he: "יינות ביתן / קרפור", en: "Yenot Bitan / Carrefour" },
+  Yellow:                  { ru: "Yellow", he: "ילו", en: "Yellow" },
+  Yohananof:               { ru: "Йоханоф", he: "יוחננוף", en: "Yohananof" },
+  ZolVeBegadol:            { ru: "Золь ве-бе-гадоль", he: "זול ובגדול", en: "Zol VeBegadol" }
 };
 
 function chainLabel(id) {
   if (!id) return "";
   const row = CHAIN_LABELS[id];
   if (!row) return id;
-  return lang === "he" ? (row.he || id) : (row.ru || id);
+  if (lang === "he") return row.he || row.en || id;
+  if (lang === "en") return row.en || row.ru || id;
+  return row.ru || row.en || id;
 }
 
 
@@ -754,7 +812,7 @@ function applyLang() {
   const x = L();
   document.documentElement.setAttribute("dir", x.dir);
   document.documentElement.setAttribute("lang", x.htmlLang);
-  document.body.classList.toggle("ltr", lang === "ru");
+  document.body.classList.toggle("ltr", lang === "ru" || lang === "en");
   const qCat = document.getElementById("q-cat");
   const q = document.getElementById("q");
   if (qCat) qCat.placeholder = x.searchPlaceholder;
