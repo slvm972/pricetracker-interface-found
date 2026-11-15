@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta name="google-site-verification" content="BYO3ribilEhZq_ETBjyXVrepIlJ3InXy2diHh9OBKBE" />
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3X3MXZP5YH"></script>
 <script>
@@ -148,7 +147,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .diff-mono{font-family:'Space Mono',monospace;}
 .diff-green{color:var(--grn);font-weight:600;}
 .diff-red{color:var(--red);}
-.coverage-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.coverage-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:10px;}
 .toggle-label{font-size:.82rem;color:var(--dim);cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;}
 .toggle-cb{width:16px;height:16px;accent-color:var(--acc);cursor:pointer;}
 .coverage-note{font-size:.72rem;color:var(--dim);margin-top:4px;}
@@ -192,6 +191,10 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
     <label class="toggle-label">
       <input type="checkbox" class="toggle-cb" id="full-cover-toggle">
       <span data-t="fullCover">Только сети с полным покрытием корзины</span>
+    </label>
+    <label class="toggle-label">
+      <input type="checkbox" class="toggle-cb" id="common-only-toggle">
+      <span data-t="commonOnly">Сравнить только товары, которые есть у всех выбранных сетей</span>
     </label>
   </div>
   <div class="coverage-note" id="coverage-note" style="display:none"></div>
@@ -280,6 +283,10 @@ const LANG = {
     resetChains: "איפוס",
     chainsSaved: "נשמר",
     fullCover: "הצג רק רשתות עם כיסוי מלא של הסל",
+    commonOnly: "השווה רק מוצרים שקיימים בכל הרשתות שנבחרו",
+    coverageOf: (n, m) => `${n} מתוך ${m} מוצרים`,
+    recommendPartial: "אף רשת לא מכסה את כל המוצרים. הכיסוי הטוב ביותר:",
+    missingItems: "חסרים ברשת זו:",
     catalogTitle: "2. קטלוג — השוואת מוצרים",
     basketTitle: "2. הוסף מוצרים לסל",
     sortLabel: "מיון:",
@@ -333,6 +340,10 @@ const LANG = {
     resetChains: "Сбросить",
     chainsSaved: "Сохранено",
     fullCover: "Только сети с полным покрытием корзины",
+    commonOnly: "Сравнить только товары, которые есть у всех выбранных сетей",
+    coverageOf: (n, m) => `${n} из ${m} товаров`,
+    recommendPartial: "Ни одна сеть не имеет всех товаров. Лучшее покрытие:",
+    missingItems: "Нет в этой сети:",
     catalogTitle: "2. Каталог — сравнение товаров",
     basketTitle: "2. Добавьте товары в корзину",
     sortLabel: "Сортировка:",
@@ -386,6 +397,10 @@ const LANG = {
     resetChains: "Reset",
     chainsSaved: "Saved",
     fullCover: "Only chains with full basket coverage",
+    commonOnly: "Compare only products available in all selected chains",
+    coverageOf: (n, m) => `${n} of ${m} products`,
+    recommendPartial: "No chain has every product. Best coverage:",
+    missingItems: "Missing in this chain:",
     catalogTitle: "2. Catalog — compare products",
     basketTitle: "2. Add products to basket",
     sortLabel: "Sort:",
@@ -1199,42 +1214,104 @@ function renderResults() {
     return;
   }
 
-  const fullOnly = document.getElementById("full-cover-toggle").checked;
+  const fullOnly = !!(document.getElementById("full-cover-toggle") || {}).checked;
+  const commonOnly = !!(document.getElementById("common-only-toggle") || {}).checked;
+
+  // Optional: only products present in every selected chain
+  let workBasket = basket;
+  if (commonOnly && selectedChains.size > 0) {
+    workBasket = basket.filter(bItem => {
+      const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
+      if (!item || !item.ch) return false;
+      for (const ch of selectedChains) {
+        if (item.ch[ch] == null) return false;
+      }
+      return true;
+    });
+    if (!workBasket.length) {
+      resEl.innerHTML = `<div style="color:#aaa;padding:10px;">${x.noItems}</div>`;
+      return;
+    }
+  }
+
+  const totalProducts = workBasket.length;
   let totals = [];
   selectedChains.forEach(ch => {
-    let sum = 0, hasAll = true, found = 0;
-    for (let bItem of basket) {
+    let sum = 0, found = 0;
+    const missing = [];
+    for (const bItem of workBasket) {
       const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
-      if (item && item.ch && item.ch[ch] != null) { sum += item.ch[ch] * bItem.qty; found += bItem.qty; }
-      else hasAll = false;
+      if (item && item.ch && item.ch[ch] != null) {
+        sum += item.ch[ch] * bItem.qty;
+        found += 1;
+      } else {
+        missing.push(item ? item.n : String(bItem.c));
+      }
     }
-    totals.push({ chain: ch, total: sum, complete: hasAll, found });
+    totals.push({
+      chain: ch,
+      total: sum,
+      found,
+      complete: found === totalProducts && totalProducts > 0,
+      missing,
+    });
   });
   if (fullOnly) totals = totals.filter(t => t.complete);
-  totals.sort((a,b) => (a.found ? a.total : Infinity) - (b.found ? b.total : Infinity));
+
+  // Primary: more products found; secondary: lower sum (only among those with found > 0)
+  totals.sort((a, b) => {
+    if (b.found !== a.found) return b.found - a.found;
+    if (a.found === 0 && b.found === 0) return 0;
+    return a.total - b.total;
+  });
+
+  const coverLabel = (t) => {
+    if (typeof x.coverageOf === "function") return x.coverageOf(t.found, totalProducts);
+    return `${t.found} / ${totalProducts}`;
+  };
 
   let html = "";
-  if (totals.length > 0 && totals[0].found > 0) {
-    const best = totals[0];
-    const second = totals.find((t,i) => i > 0 && t.found > 0);
-    html += `<div class="best-hero"><div class="bh-label">${x.recommend}</div>
-      <div class="bh-row"><span class="bh-name">${escapeHtml(chainLabel(best.chain))}</span>
-      <span class="bh-total">${best.total.toFixed(2)} ₪</span></div>`;
-    if (second) {
-      const diff = second.total - best.total;
-      if (diff > 0 && diff < 5) html += `<div class="bh-saving">Δ &lt; 5 ₪</div>`;
-      else if (diff >= 20) html += `<div class="bh-saving">Δ ${diff.toFixed(2)} ₪</div>`;
+  const candidates = totals.filter(t => t.found > 0);
+  if (candidates.length > 0) {
+    const maxFound = candidates[0].found;
+    const best = candidates.find(t => t.found === maxFound) || candidates[0];
+    const peers = candidates.filter(t => t.found === maxFound);
+    // cheapest among max coverage
+    peers.sort((a, b) => a.total - b.total);
+    const pick = peers[0];
+    const second = peers[1] || candidates.find(t => t.chain !== pick.chain);
+
+    html += `<div class="best-hero"><div class="bh-label">${x.recommend}</div>`;
+    if (!pick.complete) {
+      html += `<div class="bh-saving" style="margin-bottom:6px;">${escapeHtml(x.recommendPartial)}
+        <strong>${escapeHtml(chainLabel(pick.chain))}</strong> (${escapeHtml(coverLabel(pick))})</div>`;
+    }
+    html += `<div class="bh-row"><span class="bh-name">${escapeHtml(chainLabel(pick.chain))}</span>
+      <span class="bh-total">${pick.total.toFixed(2)} ₪</span></div>
+      <div style="font-size:.8rem;color:var(--dim);margin-top:4px;">${escapeHtml(coverLabel(pick))}</div>`;
+    if (pick.missing && pick.missing.length) {
+      html += `<div style="font-size:.78rem;margin-top:8px;color:#f0ad4e;">${escapeHtml(x.missingItems)}
+        ${pick.missing.map(n => escapeHtml(n)).join("; ")}</div>`;
+    }
+    if (second && second.found === pick.found) {
+      const diff = second.total - pick.total;
+      if (diff > 0.005 && diff < 5) html += `<div class="bh-saving">Δ &lt; 5 ₪</div>`;
+      else if (diff >= 5) html += `<div class="bh-saving">Δ ${diff.toFixed(2)} ₪</div>`;
     }
     html += `</div>`;
   }
 
-  const bestChain = totals.length && totals[0].found ? totals[0].chain : null;
+  const bestChain = candidates.length ? (() => {
+    const maxFound = candidates[0].found;
+    return candidates.filter(t => t.found === maxFound).sort((a, b) => a.total - b.total)[0].chain;
+  })() : null;
+
   if (bestChain) {
     html += `<div class="diff-wrap" style="margin-top:14px;">
       <div class="diff-head">${x.medianHead}</div>
       <div class="diff-sub">${x.medianSub}</div>
       <table class="diff-table"><tr><th>${x.product}</th><th>${x.priceInChain}</th><th>${x.median}</th><th>${x.overpay}</th></tr>`;
-    basket.forEach(bItem => {
+    workBasket.forEach(bItem => {
       const item = CATALOG_SAFE.find(c => String(c.c) === String(bItem.c));
       if (!item) return;
       const prices = ALL_CHAINS.map(ch => item.ch && item.ch[ch]).filter(v => v != null);
@@ -1245,43 +1322,55 @@ function renderResults() {
       const overPct = med > 0 ? (over / med) * 100 : 0;
       const cls = overPct > 20 ? "diff-red" : (over < -0.01 ? "diff-green" : "");
       html += `<tr><td>${escapeHtml(item.n)}</td>
-        <td class="diff-mono">${(price*bItem.qty).toFixed(2)}</td>
-        <td class="diff-mono">${(med*bItem.qty).toFixed(2)}</td>
-        <td class="diff-mono ${cls}">${over>=0?"+":""}${(over*bItem.qty).toFixed(2)} (${overPct.toFixed(0)}%)</td></tr>`;
+        <td class="diff-mono">${(price * bItem.qty).toFixed(2)}</td>
+        <td class="diff-mono">${(med * bItem.qty).toFixed(2)}</td>
+        <td class="diff-mono ${cls}">${over >= 0 ? "+" : ""}${(over * bItem.qty).toFixed(2)} (${overPct.toFixed(0)}%)</td></tr>`;
     });
     html += `</table></div>`;
   }
 
   html += `<h3 style="margin-top:14px;">${x.totalBasket}:</h3>
     <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-    <tr style="border-bottom:2px solid #555;"><th>${x.navBasket}</th><th></th><th></th></tr>`;
+    <tr style="border-bottom:2px solid #555;"><th></th><th></th><th></th><th></th></tr>`;
   totals.forEach(t => {
     const sumText = t.found > 0 ? `${t.total.toFixed(2)} ₪` : "—";
-    const statusText = t.complete ? `<span style="color:#5cb85c;">${x.coverageFull}</span>` : `<span style="color:#f0ad4e;">${x.coveragePartial}</span>`;
-    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;"><td><strong>${escapeHtml(chainLabel(t.chain))}</strong></td><td>${sumText}</td><td>${statusText}</td></tr>`;
+    const statusText = t.complete
+      ? `<span style="color:#5cb85c;">${x.coverageFull}</span>`
+      : `<span style="color:#f0ad4e;">${x.coveragePartial}</span>`;
+    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;">
+      <td><strong>${escapeHtml(chainLabel(t.chain))}</strong></td>
+      <td>${sumText}</td>
+      <td style="font-size:.8rem;color:var(--dim)">${escapeHtml(coverLabel(t))}</td>
+      <td>${statusText}</td></tr>`;
   });
   html += `</table>`;
 
   if (totals.length > 0) {
-    const best = totals.find(t => t.found > 0) || totals[0];
+    const ranked = totals.filter(t => t.found > 0);
+    const top = ranked[0];
     html += `<div style="margin-top:14px;"><h3 style="margin-bottom:10px;">${x.rankHead}:</h3><div class="rank-list">`;
     let rank = 0;
-    totals.forEach(t => {
-      if (t.found === 0) return;
+    ranked.forEach(t => {
       rank++;
-      const delta = t.total - best.total;
+      const delta = top && t.found === top.found ? (t.total - top.total) : null;
       const isBest = rank === 1;
-      html += `<div class="rank-row ${isBest?"rank-best":""}">
+      html += `<div class="rank-row ${isBest ? "rank-best" : ""}">
         <span class="rank-num">#${rank}</span>
-        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}</span>
-        <span class="rank-total ${isBest?"best":""}">${t.total.toFixed(2)} ₪</span>
-        ${delta>0.005?`<span class="rank-delta pos">+${delta.toFixed(2)} ₪</span>`:`<span class="rank-delta">✓</span>`}
+        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}
+          <span style="font-size:.72rem;color:var(--dim);font-weight:normal"> · ${escapeHtml(coverLabel(t))}</span>
+        </span>
+        <span class="rank-total ${isBest ? "best" : ""}">${t.total.toFixed(2)} ₪</span>
+        ${delta != null && delta > 0.005
+          ? `<span class="rank-delta pos">+${delta.toFixed(2)} ₪</span>`
+          : (isBest ? `<span class="rank-delta">✓</span>` : `<span class="rank-delta"></span>`)}
       </div>`;
     });
     totals.forEach(t => {
       if (t.found > 0) return;
       html += `<div class="rank-row rank-nodata"><span class="rank-num">—</span>
-        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}</span>
+        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}
+          <span style="font-size:.72rem;color:var(--dim)"> · ${escapeHtml(coverLabel(t))}</span>
+        </span>
         <span style="font-size:.75rem;color:var(--dim)">${x.noItems}</span></div>`;
     });
     html += `</div></div>`;
@@ -1351,6 +1440,8 @@ document.getElementById("btn-clear-basket").onclick = () => {
   basket = []; updateBasketBadge(); renderBasket(); renderResults();
 };
 document.getElementById("full-cover-toggle").onchange = () => renderResults();
+const commonOnlyEl = document.getElementById("common-only-toggle");
+if (commonOnlyEl) commonOnlyEl.onchange = () => renderResults();
 
 document.getElementById("q-cat").addEventListener("input", e => {
   catQ = e.target.value;
