@@ -39,7 +39,7 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px 20
 .help-btn:hover{border-color:var(--acc);color:var(--acc);}
 .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
 .help-overlay.hidden{display:none;}
-.help-panel{background:var(--surf);border:1px solid var(--brd);border-radius:14px;max-width:520px;width:100%;max-height:min(90vh,640px);overflow-y:auto;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.45);}
+.help-panel{background:var(--surf);border:1px solid var(--brd);border-radius:14px;max-width:560px;width:100%;max-height:min(92vh,720px);overflow-y:auto;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.45);}
 .help-panel h3{font-size:1.05rem;margin-bottom:14px;color:var(--txt);}
 .help-panel ol{margin:0 0 14px 0;padding-inline-start:1.4em;color:var(--txt);font-size:.88rem;line-height:1.55;}
 .help-panel ol li{margin-bottom:10px;}
@@ -47,6 +47,13 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px 20
 .help-panel .help-close{display:block;width:100%;padding:9px;border:none;border-radius:8px;background:var(--acc);color:#0d1117;font-weight:700;cursor:pointer;font-family:inherit;font-size:.9rem;}
 .help-flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-bottom:16px;font-size:.8rem;color:var(--dim);}
 .help-flow span{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:4px 8px;color:var(--txt);}
+.help-sec{margin:0 0 14px 0;padding-bottom:12px;border-bottom:1px solid var(--brd);}
+.help-sec:last-of-type{border-bottom:none;padding-bottom:0;}
+.help-sec h4{font-size:.88rem;font-weight:700;color:var(--acc);margin:0 0 8px 0;}
+.help-sec p,.help-sec li{font-size:.84rem;line-height:1.5;color:var(--txt);margin:0 0 6px 0;}
+.help-sec ul{margin:0 0 6px 0;padding-inline-start:1.25em;}
+.help-sec li{margin-bottom:5px;}
+
 
 .section{padding:16px 20px;border-bottom:1px solid var(--brd);}
 h2{font-size:.95rem;font-weight:600;margin-bottom:12px;}
@@ -260,13 +267,54 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
       <span data-t="helpFlow4">④ Сравнить</span>
       <span data-t="helpFlow5">⑤ Сэкономить</span>
     </div>
-    <ol id="help-steps">
-      <li data-t="helpStep1"></li>
-      <li data-t="helpStep2"></li>
-      <li data-t="helpStep3"></li>
-      <li data-t="helpStep4"></li>
-      <li data-t="helpStep5"></li>
-    </ol>
+    <div class="help-sec">
+      <h4 data-t="helpWhatTitle">Что это</h4>
+      <p data-t="helpWhatBody"></p>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpStepsTitle">Как пользоваться</h4>
+      <ol id="help-steps">
+        <li data-t="helpStep1"></li>
+        <li data-t="helpStep2"></li>
+        <li data-t="helpStep3"></li>
+        <li data-t="helpStep4"></li>
+        <li data-t="helpStep5"></li>
+      </ol>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpBestTitle">Когда сервис наиболее полезен</h4>
+      <ul>
+        <li data-t="helpBest1"></li>
+        <li data-t="helpBest2"></li>
+        <li data-t="helpBest3"></li>
+        <li data-t="helpBest4"></li>
+      </ul>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpWeakTitle">Когда эффект слабее</h4>
+      <ul>
+        <li data-t="helpWeak1"></li>
+        <li data-t="helpWeak2"></li>
+        <li data-t="helpWeak3"></li>
+        <li data-t="helpWeak4"></li>
+      </ul>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpChainsTitle">Сети и даты</h4>
+      <p data-t="helpChainsBody"></p>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpModesTitle">Каталог и корзина</h4>
+      <p data-t="helpModesBody"></p>
+    </div>
+    <div class="help-sec">
+      <h4 data-t="helpLimitsTitle">Ограничения</h4>
+      <ul>
+        <li data-t="helpLim1"></li>
+        <li data-t="helpLim2"></li>
+        <li data-t="helpLim3"></li>
+      </ul>
+    </div>
     <div class="help-tip" id="help-tip" data-t="helpTip"></div>
     <button type="button" class="help-close" id="help-close" data-t="helpClose">Закрыть</button>
   </div>
@@ -324,18 +372,39 @@ const LANG = {
     filterBrands: "מותגים",
     dataUpdated: "הנתונים עודכנו",
     helpBtn: "איך משתמשים?",
-    helpTitle: "איך להשתמש בשירות",
+    helpTitle: "עזרה — Price Tracker",
     helpFlow1: "① קטלוג",
     helpFlow2: "② הוספה",
     helpFlow3: "③ סל",
     helpFlow4: "④ השוואה",
     helpFlow5: "⑤ חיסכון",
-    helpStep1: "מצאו מוצרים — בקטלוג חפשו מוצרים והשוו מחירים בין רשתות.",
-    helpStep2: "הוסיפו לסל — לחצו «לסל +» על כל מוצר. ניתן לשנות כמות.",
-    helpStep3: "פתחו את הסל — כל הפריטים שנבחרו יופיעו שם.",
-    helpStep4: "השוו אפשרויות — השירות יחשב את עלות הקנייה בכל רשת ויראה איפה משתלם יותר.",
-    helpStep5: "ראו את החיסכון — תראו את ההפרש ותוכלו לבחור את האפשרות המשתלמת.",
-    helpTip: "💡 טיפ: קודם אספו מוצרים בקטלוג, ואז עברו לסל להשוואת כל הקנייה.",
+    helpWhatTitle: "מה זה השירות",
+    helpWhatBody: "השוואת מחירי מוצרים ברשתות שיווק בישראל לפי ברקוד, לפי מחירונים רשמיים. בלי פרסומות «אצלנו יותר זול». המספרים מתעדכנים לפי איסוף הנתונים — שימו לב לתאריך ליד כל רשת ולשורה «הנתונים עודכנו».",
+    helpStepsTitle: "איך משתמשים",
+    helpStep1: "סמנו רשתות שזמינות לכם באזור ולחצו «שמור רשתות».",
+    helpStep2: "בקטלוג חפשו מוצרים, השוו מחירים בין רשתות והוסיפו לסל.",
+    helpStep3: "פתחו את הסל — הפריטים והכמויות נשמרים במכשיר זה.",
+    helpStep4: "בסל תראו איפה כל הקנייה זולה יותר, ומה הכיסוי (כמה מוצרים בכל רשת).",
+    helpStep5: "בחרו רשת עם מחיר טוב וכיסוי גבוה — לא רק את המחיר הנמוך ביותר על פריט בודד.",
+    helpBestTitle: "מתי השירות הכי מועיל",
+    helpBest1: "מתכננים קנייה לשבוע או מוכנים לפצל בין כמה חנויות.",
+    helpBest2: "בוחרים רשת לפי סל שלם, לא «תמיד אותו סופר».",
+    helpBest3: "משווים אותו מוצר (אותו ברקוד), לא «חלב דומה».",
+    helpBest4: "באזור שלכם יש לפחות שתי רשתות עם נתונים עדכניים בקטלוג.",
+    helpWeakTitle: "מתי התועלת קטנה יותר",
+    helpWeak1: "צריך מוצר אחד «עכשיו» — לפעמים מספיק חנות אחת.",
+    helpWeak2: "רשת עם מסגרת צהובה / תאריך ישן — המחיר עלול להיות לא מעודכן.",
+    helpWeak3: "מעט רשתות באזור או מעט מוצרים של הרשת בקטלוג.",
+    helpWeak4: "מוצרים לפי משקל (ק״ג) מול אריזה — ההשוואה פחות חד-משמעית.",
+    helpChainsTitle: "רשתות ותאריכים",
+    helpChainsBody: "הסימונים קובעים אילו רשתות משתתפות בהשוואה. «שמור» / «איפוס» נשמרים בדפדפן זה. התאריך מתחת לשם — מתי לאחרונה הופיעו נתונים לרשת. צהוב = הנתונים מתקרבים לסף של כ־3 ימים.",
+    helpModesTitle: "קטלוג וסל",
+    helpModesBody: "קטלוג — חיפוש והשוואת מוצר בודד. סל — השוואת כל הקנייה יחד (סכום, כיסוי, המלצה). הכי חזק: סל אמיתי של 10–30 מוצרים, לא פריט אחד.",
+    helpLimitsTitle: "מגבלות",
+    helpLim1: "זה לא אתר החנות: אין מלאי «ברגע זה» ואין משלוח.",
+    helpLim2: "מבצעים, מועדון והנחות אישיות עלולים לא להופיע בקובץ המחירים.",
+    helpLim3: "רשתות קטנות או מקומיות עלולות להיות חלקיות בקטלוג.",
+    helpTip: "💡 טיפ: שמרו רשתות מהאזור, מלאו סל אמיתי, והעדיפו רשת עם כיסוי מלא ומחיר טוב — לא רק מחיר בודד נמוך.",
     helpClose: "סגור",
   },
   ru: {
@@ -383,18 +452,39 @@ const LANG = {
     filterBrands: "Бренды",
     dataUpdated: "Данные обновлены",
     helpBtn: "Как пользоваться?",
-    helpTitle: "Как пользоваться сервисом",
+    helpTitle: "Справка — Price Tracker",
     helpFlow1: "① Каталог",
     helpFlow2: "② Добавить",
     helpFlow3: "③ Корзина",
     helpFlow4: "④ Сравнить",
     helpFlow5: "⑤ Сэкономить",
-    helpStep1: "Найдите товары — в разделе «Каталог» найдите нужные товары и сравните цены в разных сетях.",
-    helpStep2: "Добавьте товары в корзину — нажмите «В корзину» у каждого нужного товара. При необходимости укажите количество.",
-    helpStep3: "Откройте «Корзину» — все выбранные товары автоматически появятся в корзине.",
-    helpStep4: "Сравните варианты покупки — сервис рассчитает стоимость в разных сетях и покажет, где выгоднее покупать.",
-    helpStep5: "Посмотрите экономию — вы увидите разницу в стоимости и сможете выбрать наиболее выгодный вариант.",
-    helpTip: "💡 Совет: сначала соберите нужные товары в «Каталоге», затем перейдите в «Корзину» для сравнения всей покупки.",
+    helpWhatTitle: "Что это за сервис",
+    helpWhatBody: "Сравнение цен на товары в израильских сетях по штрихкоду — по официальным прайсам магазинов, без рекламы «у нас дешевле». Цифры обновляются по мере сбора данных: смотрите дату у каждой сети и строку «Данные обновлены».",
+    helpStepsTitle: "Как пользоваться",
+    helpStep1: "Отметьте сети, которые вам доступны в районе, и нажмите «Сохранить сети».",
+    helpStep2: "В «Каталоге» найдите товары, сравните цены по сетям и добавьте нужное в корзину.",
+    helpStep3: "Откройте «Корзину» — товары и количества сохраняются в этом браузере.",
+    helpStep4: "В корзине видно, где вся покупка дешевле и насколько сеть покрывает ваш список.",
+    helpStep5: "Выбирайте сеть с хорошей ценой и высоким покрытием — не только самый дешёвый один товар.",
+    helpBestTitle: "Когда сервис наиболее полезен",
+    helpBest1: "Планируете закупку на неделю или готовы зайти в 2–3 магазина.",
+    helpBest2: "Выбираете сеть под всю корзину, а не «всегда один и тот же супер».",
+    helpBest3: "Сравниваете один и тот же товар (один штрихкод), а не «похожее молоко».",
+    helpBest4: "В вашем районе в списке есть хотя бы две сети со свежими данными.",
+    helpWeakTitle: "Когда эффект слабее",
+    helpWeak1: "Нужен один товар «прямо сейчас» — иногда проще один магазин рядом.",
+    helpWeak2: "Сеть с жёлтой рамкой / старой датой — цена могла устареть.",
+    helpWeak3: "Мало сетей в районе или у сети мало позиций в каталоге.",
+    helpWeak4: "Вес (кг) против фасовки — сравнивать «в лоб» менее надёжно.",
+    helpChainsTitle: "Сети и даты",
+    helpChainsBody: "Галочки задают, какие сети участвуют в сравнении. «Сохранить» / «Сбросить» помнятся в этом браузере. Дата под названием — когда в данных последний раз была эта сеть. Жёлтый цвет — данные около порога в ~3 дня.",
+    helpModesTitle: "Каталог и корзина",
+    helpModesBody: "Каталог — поиск и сравнение одного товара. Корзина — сравнение всей покупки (сумма, покрытие, рекомендация). Сильнее всего работает на реальной корзине из 10–30 позиций, а не на одном йогурте.",
+    helpLimitsTitle: "Ограничения",
+    helpLim1: "Это не сайт магазина: нет наличия «на полке в эту минуту» и доставки.",
+    helpLim2: "Акции, клубные и персональные скидки могут не совпадать с файлом цен.",
+    helpLim3: "Мелкие и локальные сети в каталоге могут быть неполными.",
+    helpTip: "💡 Совет: сохраните сети своего района, наберите реальную корзину и смотрите покрытие + сумму — не только одну низкую цену.",
     helpClose: "Закрыть",
   },
   en: {
@@ -442,18 +532,39 @@ const LANG = {
     filterBrands: "Brands",
     dataUpdated: "Data updated",
     helpBtn: "How to use?",
-    helpTitle: "How to use this service",
+    helpTitle: "Help — Price Tracker",
     helpFlow1: "① Catalog",
     helpFlow2: "② Add items",
     helpFlow3: "③ Basket",
     helpFlow4: "④ Compare",
     helpFlow5: "⑤ Save money",
-    helpStep1: "Find products — in Catalog search items and compare prices across chains.",
-    helpStep2: "Add to basket — tap «Add to basket» on each item. Adjust quantity if needed.",
-    helpStep3: "Open Basket — all selected items appear there automatically.",
-    helpStep4: "Compare options — the service totals your basket in each chain and shows where it is cheaper.",
-    helpStep5: "See the savings — check the price difference and pick the best option.",
-    helpTip: "💡 Tip: first collect products in Catalog, then open Basket to compare the whole purchase.",
+    helpWhatTitle: "What this service is",
+    helpWhatBody: "Compare product prices across Israeli supermarket chains by barcode, using official chain price files — not ads saying «we are cheaper». Figures update when data is collected; check the date under each chain and the «Data updated» line.",
+    helpStepsTitle: "How to use",
+    helpStep1: "Select chains available in your area and tap «Save chains».",
+    helpStep2: "In Catalog, search items, compare prices across chains, and add what you need to the basket.",
+    helpStep3: "Open Basket — items and quantities stay in this browser.",
+    helpStep4: "In Basket you see where the whole purchase is cheaper and how much of your list each chain covers.",
+    helpStep5: "Prefer a chain with a good total and high coverage — not only the lowest price on a single item.",
+    helpBestTitle: "When it helps most",
+    helpBest1: "You plan a weekly shop or can visit more than one store.",
+    helpBest2: "You pick a chain for the full basket, not «always the same supermarket».",
+    helpBest3: "You compare the same product (same barcode), not «similar milk».",
+    helpBest4: "Your area has at least two chains with fresh data in the catalog.",
+    helpWeakTitle: "When it helps less",
+    helpWeak1: "You need one item right now — a nearby store may be enough.",
+    helpWeak2: "A chain with a yellow frame / old date — the price may be outdated.",
+    helpWeak3: "Few chains nearby, or a chain has few products in the catalog.",
+    helpWeak4: "Weighted (per kg) vs packed items — direct comparison is less reliable.",
+    helpChainsTitle: "Chains and dates",
+    helpChainsBody: "Checkboxes control which chains enter the comparison. Save / Reset are remembered in this browser. The date under the name is when that chain last appeared in the data. Yellow means data is near the ~3-day freshness limit.",
+    helpModesTitle: "Catalog and basket",
+    helpModesBody: "Catalog — find and compare one product. Basket — compare the whole purchase (total, coverage, recommendation). It works best with a real list of 10–30 items, not a single yogurt.",
+    helpLimitsTitle: "Limits",
+    helpLim1: "This is not a store site: no live shelf stock and no delivery.",
+    helpLim2: "Promotions, club prices and personal discounts may differ from the price file.",
+    helpLim3: "Small or local chains may be incomplete in the catalog.",
+    helpTip: "💡 Tip: save your local chains, build a real basket, and look at coverage + total — not only one low price.",
     helpClose: "Close",
   }
 };
