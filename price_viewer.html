@@ -60,9 +60,15 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .chain-act-btn.primary{border-color:var(--acc);color:var(--acc);}
 .chain-save-msg{font-size:.75rem;color:var(--grn);opacity:0;transition:opacity .2s;}
 .chain-save-msg.show{opacity:1;}
-.chain-btn{padding:4px 11px;border-radius:8px;border:2px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;line-height:1.5;}
+.chain-btn{display:inline-flex;flex-direction:column;align-items:center;gap:1px;padding:4px 11px;border-radius:8px;border:2px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;line-height:1.35;}
 .chain-btn.on{font-weight:700;border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.08);}
 .chain-btn:hover:not(.on){border-color:#555;color:var(--txt);}
+.chain-btn .chain-date{font-size:.65rem;font-weight:400;color:var(--dim);opacity:.85;font-family:'Space Mono',monospace;line-height:1.2;}
+.chain-btn.stale{border-color:#d4a017;box-shadow:0 0 0 1px rgba(212,160,23,.25);}
+.chain-btn.stale.on{border-color:#d4a017;color:var(--acc);background:rgba(212,160,23,.08);}
+.chain-btn.stale .chain-date{color:#d4a017;opacity:1;}
+.rank-row.rank-stale{border-color:rgba(212,160,23,.55);background:rgba(212,160,23,.06);}
+.rank-row.rank-stale .rank-name .stale-mark{color:#d4a017;font-size:.72rem;font-weight:400;margin-inline-start:6px;}
 
 .search-wrap{position:relative;max-width:520px;}
 #q,#q-cat{width:100%;padding:9px 14px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-size:.95rem;font-family:inherit;outline:none;}
@@ -282,6 +288,8 @@ const LANG = {
     saveChains: "שמור רשתות",
     resetChains: "איפוס",
     chainsSaved: "נשמר",
+    chainStaleTip: (d) => `נתונים מ-${d}, ייתכן שאינם מעודכנים`,
+    chainStaleMark: "ישן",
     fullCover: "הצג רק רשתות עם כיסוי מלא של הסל",
     commonOnly: "השווה רק מוצרים שקיימים בכל הרשתות שנבחרו",
     coverageOf: (n, m) => `${n} מתוך ${m} מוצרים`,
@@ -339,6 +347,8 @@ const LANG = {
     saveChains: "Сохранить сети",
     resetChains: "Сбросить",
     chainsSaved: "Сохранено",
+    chainStaleTip: (d) => `Данные от ${d}, возможно устарели`,
+    chainStaleMark: "устарели",
     fullCover: "Только сети с полным покрытием корзины",
     commonOnly: "Сравнить только товары, которые есть у всех выбранных сетей",
     coverageOf: (n, m) => `${n} из ${m} товаров`,
@@ -396,6 +406,8 @@ const LANG = {
     saveChains: "Save chains",
     resetChains: "Reset",
     chainsSaved: "Saved",
+    chainStaleTip: (d) => `Data from ${d}, may be outdated`,
+    chainStaleMark: "stale",
     fullCover: "Only chains with full basket coverage",
     commonOnly: "Compare only products available in all selected chains",
     coverageOf: (n, m) => `${n} of ${m} products`,
@@ -916,24 +928,90 @@ function wireChainActionButtons() {
   if (resetBtn) resetBtn.onclick = () => resetSelectedChains();
 }
 
+
+// ── Chain data freshness (CHAIN_UPDATED from data.js) ─────────────
+const CHAIN_UPDATED_MAP = (typeof CHAIN_UPDATED !== "undefined" && CHAIN_UPDATED && typeof CHAIN_UPDATED === "object")
+  ? CHAIN_UPDATED : {};
+const STALE_DAYS = 3;
+
+function parseChainUpdated(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim().replace("T", " ");
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatChainDayMonth(raw) {
+  const d = parseChainUpdated(raw);
+  if (!d) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return dd + "." + mm;
+}
+
+function isChainStale(chainId) {
+  const raw = CHAIN_UPDATED_MAP[chainId];
+  const d = parseChainUpdated(raw);
+  if (!d) return false;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.floor((today - day) / 86400000);
+  return diffDays >= STALE_DAYS;
+}
+
+function chainStaleTitle(chainId) {
+  const raw = CHAIN_UPDATED_MAP[chainId];
+  const dm = formatChainDayMonth(raw);
+  if (!dm) return "";
+  const x = L();
+  if (typeof x.chainStaleTip === "function") return x.chainStaleTip(dm);
+  return dm;
+}
+
 function buildChainGrid() {
   const grid = document.getElementById("chains-grid");
   grid.innerHTML = "";
   ALL_CHAINS.forEach(ch => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
-    btn.textContent = chainLabel(ch);
+    const stale = isChainStale(ch);
+    btn.className = "chain-btn"
+      + (selectedChains.has(ch) ? " on" : "")
+      + (stale ? " stale" : "");
     btn.dataset.chain = ch;
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "chain-name";
+    nameEl.textContent = chainLabel(ch);
+    btn.appendChild(nameEl);
+
+    const rawUpd = CHAIN_UPDATED_MAP[ch];
+    const dm = formatChainDayMonth(rawUpd);
+    if (dm) {
+      const dateEl = document.createElement("span");
+      dateEl.className = "chain-date";
+      dateEl.textContent = dm;
+      btn.appendChild(dateEl);
+    }
+
     const cnt = CHAIN_PRODUCT_COUNT[ch] || 0;
     const label = chainLabel(ch);
-    btn.title = cnt ? (label + " (" + ch + "): " + cnt.toLocaleString() + " " + (lang === "he" ? "מוצרים" : "товаров")) : label;
+    const baseTitle = cnt
+      ? (label + " (" + ch + "): " + cnt.toLocaleString() + " " + (lang === "he" ? "מוצרים" : (lang === "en" ? "products" : "товаров")))
+      : label;
+    btn.title = stale ? (chainStaleTitle(ch) || baseTitle) : baseTitle;
+
     btn.onclick = () => {
       if (selectedChains.has(ch)) {
         if (selectedChains.size > 1) selectedChains.delete(ch);
       } else selectedChains.add(ch);
       saveSelectedChains();
-      btn.className = "chain-btn" + (selectedChains.has(ch) ? " on" : "");
+      btn.className = "chain-btn"
+        + (selectedChains.has(ch) ? " on" : "")
+        + (isChainStale(ch) ? " stale" : "");
       if (appMode === "catalog") { catPg = 1; renderCatalog(); }
       else { renderBasket(); renderResults(); renderBasketCatalog(); }
     };
@@ -1354,9 +1432,14 @@ function renderResults() {
       rank++;
       const delta = top && t.found === top.found ? (t.total - top.total) : null;
       const isBest = rank === 1;
-      html += `<div class="rank-row ${isBest ? "rank-best" : ""}">
+      const stale = isChainStale(t.chain);
+      const staleCls = stale ? " rank-stale" : "";
+      const staleMark = stale
+        ? `<span class="stale-mark" title="${escapeHtml(chainStaleTitle(t.chain))}"> · ${escapeHtml(L().chainStaleMark || "")}</span>`
+        : "";
+      html += `<div class="rank-row ${isBest ? "rank-best" : ""}${staleCls}"${stale ? ` title="${escapeHtml(chainStaleTitle(t.chain))}"` : ""}>
         <span class="rank-num">#${rank}</span>
-        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}
+        <span class="rank-name">${escapeHtml(chainLabel(t.chain))}${staleMark}
           <span style="font-size:.72rem;color:var(--dim);font-weight:normal"> · ${escapeHtml(coverLabel(t))}</span>
         </span>
         <span class="rank-total ${isBest ? "best" : ""}">${t.total.toFixed(2)} ₪</span>
@@ -1367,7 +1450,8 @@ function renderResults() {
     });
     totals.forEach(t => {
       if (t.found > 0) return;
-      html += `<div class="rank-row rank-nodata"><span class="rank-num">—</span>
+      const stale = isChainStale(t.chain);
+      html += `<div class="rank-row rank-nodata${stale ? " rank-stale" : ""}"${stale ? ` title="${escapeHtml(chainStaleTitle(t.chain))}"` : ""}><span class="rank-num">—</span>
         <span class="rank-name">${escapeHtml(chainLabel(t.chain))}
           <span style="font-size:.72rem;color:var(--dim)"> · ${escapeHtml(coverLabel(t))}</span>
         </span>
