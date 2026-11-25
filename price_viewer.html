@@ -14,11 +14,37 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;600;700&family=Noto+Sans:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script>
+(function(){var t=null;try{t=localStorage.getItem("pt_theme");}catch(e){}
+if(t!=="light"&&t!=="dark"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark";}
+document.documentElement.setAttribute("data-theme",t);})();
+</script>
 <style>
 :root{
   --bg:#0d1117;--surf:#161b22;--surf2:#21262d;--brd:#30363d;
   --txt:#e6edf3;--dim:#8b949e;--acc:#58a6ff;--grn:#3fb950;
   --red:#ff7b72;--warn:#e3b341;
+  --on-acc:#0d1117;--muted:#aaa;--orange:#f0ad4e;--ok:#5cb85c;
+  --chip-bg:#2d2d2d;--chip-brd:#444;--chip-txt:#fff;--hover-brd:#555;--row-brd:#3c3c3c;
+  --acc-a08:rgba(88,166,255,.08);--acc-a10:rgba(88,166,255,.1);--acc-a12:rgba(88,166,255,.12);
+  --grn-a07:rgba(63,185,80,.07);--grn-a04:rgba(63,185,80,.04);
+  --stale:#d4a017;--stale-a08:rgba(212,160,23,.08);--stale-a06:rgba(212,160,23,.06);
+  --stale-a25:rgba(212,160,23,.25);--stale-a55:rgba(212,160,23,.55);
+  --shadow:rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#eef0f3;--surf:#ffffff;--surf2:#e3e7ec;--brd:#cdd3da;
+  --txt:#1c2128;--dim:#55606d;--acc:#0969da;--grn:#1a7f37;
+  --red:#cf222e;--warn:#8a5a00;
+  --on-acc:#ffffff;--muted:#55606d;--orange:#8a5a00;--ok:#1a7f37;
+  --chip-bg:#e3e7ec;--chip-brd:#cdd3da;--chip-txt:#1c2128;--hover-brd:#8c959f;--row-brd:#cdd3da;
+  --acc-a08:rgba(9,105,218,.08);--acc-a10:rgba(9,105,218,.1);--acc-a12:rgba(9,105,218,.12);
+  --grn-a07:rgba(26,127,55,.08);--grn-a04:rgba(26,127,55,.05);
+  --stale:#8a5a00;--stale-a08:rgba(138,90,0,.1);--stale-a06:rgba(138,90,0,.08);
+  --stale-a25:rgba(138,90,0,.28);--stale-a55:rgba(138,90,0,.6);
+  --shadow:rgba(28,33,40,.2);
+  color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font-family:'Noto Sans Hebrew',sans-serif;min-height:100vh;direction:rtl;}
@@ -30,21 +56,24 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px 20
 .upd{font-size:.72rem;color:var(--dim);}
 .lang-sw{display:flex;gap:4px;}
 .lang-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;font-weight:600;}
-.lang-btn.active{background:var(--acc);border-color:var(--acc);color:#0d1117;}
+.lang-btn.active{background:var(--acc);border-color:var(--acc);color:var(--on-acc);}
+.theme-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--acc);background:var(--acc-a10);color:var(--acc);font-size:.78rem;font-weight:600;line-height:1.35;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.theme-btn:hover{background:var(--acc-a12);}
+.theme-btn:focus-visible,.lang-btn:focus-visible,.help-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px;}
 .nav-modes{display:flex;gap:6px;margin-inline-start:auto;}
 .nav-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.82rem;cursor:pointer;font-family:inherit;}
-.nav-btn.on{border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.1);font-weight:700;}
-.basket-badge{display:inline-block;min-width:18px;padding:0 5px;margin-inline-start:4px;border-radius:9px;background:var(--grn);color:#0d1117;font-size:.7rem;font-weight:700;}
+.nav-btn.on{border-color:var(--acc);color:var(--acc);background:var(--acc-a10);font-weight:700;}
+.basket-badge{display:inline-block;min-width:18px;padding:0 5px;margin-inline-start:4px;border-radius:9px;background:var(--grn);color:var(--on-acc);font-size:.7rem;font-weight:700;}
 .help-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--brd);background:transparent;color:var(--dim);font-size:.78rem;cursor:pointer;font-family:inherit;white-space:nowrap;}
 .help-btn:hover{border-color:var(--acc);color:var(--acc);}
 .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
 .help-overlay.hidden{display:none;}
-.help-panel{background:var(--surf);border:1px solid var(--brd);border-radius:14px;max-width:560px;width:100%;max-height:min(92vh,720px);overflow-y:auto;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.45);}
+.help-panel{background:var(--surf);border:1px solid var(--brd);border-radius:14px;max-width:560px;width:100%;max-height:min(92vh,720px);overflow-y:auto;padding:20px 22px;box-shadow:0 12px 40px var(--shadow);}
 .help-panel h3{font-size:1.05rem;margin-bottom:14px;color:var(--txt);}
 .help-panel ol{margin:0 0 14px 0;padding-inline-start:1.4em;color:var(--txt);font-size:.88rem;line-height:1.55;}
 .help-panel ol li{margin-bottom:10px;}
 .help-panel .help-tip{font-size:.82rem;color:var(--dim);line-height:1.45;padding:10px 12px;background:var(--surf2);border-radius:8px;margin-bottom:14px;}
-.help-panel .help-close{display:block;width:100%;padding:9px;border:none;border-radius:8px;background:var(--acc);color:#0d1117;font-weight:700;cursor:pointer;font-family:inherit;font-size:.9rem;}
+.help-panel .help-close{display:block;width:100%;padding:9px;border:none;border-radius:8px;background:var(--acc);color:var(--on-acc);font-weight:700;cursor:pointer;font-family:inherit;font-size:.9rem;}
 .help-flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-bottom:16px;font-size:.8rem;color:var(--dim);}
 .help-flow span{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:4px 8px;color:var(--txt);}
 .help-sec{margin:0 0 14px 0;padding-bottom:12px;border-bottom:1px solid var(--brd);}
@@ -68,14 +97,14 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .chain-save-msg{font-size:.75rem;color:var(--grn);opacity:0;transition:opacity .2s;}
 .chain-save-msg.show{opacity:1;}
 .chain-btn{display:inline-flex;flex-direction:column;align-items:center;gap:1px;padding:4px 11px;border-radius:8px;border:2px solid var(--brd);background:var(--surf2);color:var(--dim);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;line-height:1.35;}
-.chain-btn.on{font-weight:700;border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.08);}
-.chain-btn:hover:not(.on){border-color:#555;color:var(--txt);}
+.chain-btn.on{font-weight:700;border-color:var(--acc);color:var(--acc);background:var(--acc-a08);}
+.chain-btn:hover:not(.on){border-color:var(--hover-brd);color:var(--txt);}
 .chain-btn .chain-date{font-size:.65rem;font-weight:400;color:var(--dim);opacity:.85;font-family:'Space Mono',monospace;line-height:1.2;}
-.chain-btn.stale{border-color:#d4a017;box-shadow:0 0 0 1px rgba(212,160,23,.25);}
-.chain-btn.stale.on{border-color:#d4a017;color:var(--acc);background:rgba(212,160,23,.08);}
-.chain-btn.stale .chain-date{color:#d4a017;opacity:1;}
-.rank-row.rank-stale{border-color:rgba(212,160,23,.55);background:rgba(212,160,23,.06);}
-.rank-row.rank-stale .rank-name .stale-mark{color:#d4a017;font-size:.72rem;font-weight:400;margin-inline-start:6px;}
+.chain-btn.stale{border-color:var(--stale);box-shadow:0 0 0 1px var(--stale-a25);}
+.chain-btn.stale.on{border-color:var(--stale);color:var(--acc);background:var(--stale-a08);}
+.chain-btn.stale .chain-date{color:var(--stale);opacity:1;}
+.rank-row.rank-stale{border-color:var(--stale-a55);background:var(--stale-a06);}
+.rank-row.rank-stale .rank-name .stale-mark{color:var(--stale);font-size:.72rem;font-weight:400;margin-inline-start:6px;}
 
 .search-wrap{position:relative;max-width:520px;}
 #q,#q-cat{width:100%;padding:9px 14px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-size:.95rem;font-family:inherit;outline:none;}
@@ -83,9 +112,9 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 #q::placeholder,#q-cat::placeholder{color:var(--dim);}
 
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;}
-.chip,.sb,.vb{padding:5px 12px;border-radius:14px;border:1px solid #444;background:#2d2d2d;color:#fff;font-size:12px;cursor:pointer;font-family:inherit;}
-.chip.on,.sb.on,.vb.on{border-color:var(--acc);color:var(--acc);background:rgba(88,166,255,.12);}
-.filter-badge{background:#2d2d2d;color:#fff;border:1px solid #444;padding:6px 14px;border-radius:15px;cursor:pointer;font-size:12px;font-family:inherit;}
+.chip,.sb,.vb{padding:5px 12px;border-radius:14px;border:1px solid var(--chip-brd);background:var(--chip-bg);color:var(--chip-txt);font-size:12px;cursor:pointer;font-family:inherit;}
+.chip.on,.sb.on,.vb.on{border-color:var(--acc);color:var(--acc);background:var(--acc-a12);}
+.filter-badge{background:var(--chip-bg);color:var(--chip-txt);border:1px solid var(--chip-brd);padding:6px 14px;border-radius:15px;cursor:pointer;font-size:12px;font-family:inherit;}
 .filter-badge.on{border-color:var(--acc);color:var(--acc);}
 
 .gv{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
@@ -101,7 +130,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .pc-diff.down{color:var(--grn);}
 .pc-unit{font-size:.65rem;color:var(--dim);}
 .saving{font-size:.75rem;color:var(--warn);margin-top:6px;}
-.btn-add{margin-top:10px;width:100%;padding:8px;border:none;border-radius:8px;background:var(--acc);color:#0d1117;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-add{margin-top:10px;width:100%;padding:8px;border:none;border-radius:8px;background:var(--acc);color:var(--on-acc);font-weight:700;cursor:pointer;font-family:inherit;}
 .btn-add:hover{filter:brightness(1.08);}
 
 .cv{display:flex;flex-direction:column;gap:10px;}
@@ -135,7 +164,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .empty-msg{color:var(--dim);font-size:.87rem;padding:10px 0;}
 
 .results{padding:16px 20px;}
-.best-hero{background:rgba(63,185,80,.07);border:1px solid var(--grn);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.best-hero{background:var(--grn-a07);border:1px solid var(--grn);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
 .bh-label{font-size:.72rem;color:var(--grn);font-weight:600;margin-bottom:6px;}
 .bh-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
 .bh-name{font-size:1.3rem;font-weight:700;}
@@ -143,7 +172,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 .bh-saving{font-size:.82rem;color:var(--warn);margin-top:5px;}
 .rank-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
 .rank-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--brd);border-radius:9px;padding:10px 14px;}
-.rank-row.rank-best{border-color:var(--grn);background:rgba(63,185,80,.04);}
+.rank-row.rank-best{border-color:var(--grn);background:var(--grn-a04);}
 .rank-row.rank-nodata{opacity:.45;}
 .rank-num{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--dim);min-width:24px;}
 .rank-name{flex:1;font-weight:600;font-size:.9rem;}
@@ -184,6 +213,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
     <button type="button" class="lang-btn" data-lang="ru">RU</button>
     <button type="button" class="lang-btn" data-lang="en">EN</button>
   </div>
+  <button type="button" class="theme-btn" id="theme-btn"></button>
   <button type="button" class="help-btn" id="help-btn" data-t="helpBtn">Как пользоваться?</button>
   <nav class="nav-modes">
     <button type="button" class="nav-btn on" id="nav-catalog" data-t="navCatalog">Каталог</button>
@@ -323,6 +353,26 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
 <script src="data.js"></script>
 <script>
 const LS_LANG = "pt_lang";
+const LS_THEME = "pt_theme";
+function currentTheme() {
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+}
+function updateThemeBtn() {
+  const btn = document.getElementById("theme-btn");
+  if (!btn) return;
+  const isLight = currentTheme() === "light";
+  const x = (typeof L === "function") ? L() : {};
+  const label = isLight ? x.themeToDark : x.themeToLight;
+  const name = isLight ? x.themeDarkName : x.themeLightName;
+  btn.textContent = (isLight ? "\u263E" : "\u2600") + (name ? " " + name : "");
+  if (label) { btn.title = label; btn.setAttribute("aria-label", label); }
+}
+document.getElementById("theme-btn").addEventListener("click", () => {
+  const next = currentTheme() === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem(LS_THEME, next); } catch (e) {}
+  updateThemeBtn();
+});
 const LS_CHAINS = "pt_chains";
 const PG = 24;
 
@@ -372,6 +422,7 @@ const LANG = {
     filterBrands: "מותגים",
     dataUpdated: "הנתונים עודכנו",
     helpBtn: "איך משתמשים?",
+    themeToLight: "מעבר לערכת נושא בהירה", themeToDark: "מעבר לערכת נושא כהה", themeLightName: "ערכה בהירה", themeDarkName: "ערכה כהה",
     helpTitle: "עזרה — Price Tracker",
     helpFlow1: "① קטלוג",
     helpFlow2: "② הוספה",
@@ -452,6 +503,7 @@ const LANG = {
     filterBrands: "Бренды",
     dataUpdated: "Данные обновлены",
     helpBtn: "Как пользоваться?",
+    themeToLight: "Переключить на светлую тему", themeToDark: "Переключить на тёмную тему", themeLightName: "Светлая тема", themeDarkName: "Тёмная тема",
     helpTitle: "Справка — Price Tracker",
     helpFlow1: "① Каталог",
     helpFlow2: "② Добавить",
@@ -532,6 +584,7 @@ const LANG = {
     filterBrands: "Brands",
     dataUpdated: "Data updated",
     helpBtn: "How to use?",
+    themeToLight: "Switch to light theme", themeToDark: "Switch to dark theme", themeLightName: "Light theme", themeDarkName: "Dark theme",
     helpTitle: "Help — Price Tracker",
     helpFlow1: "① Catalog",
     helpFlow2: "② Add items",
@@ -988,6 +1041,7 @@ function applyLang() {
   document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
   });
+  updateThemeBtn();
   // re-render mode content with new strings
   setUpdateLabel();
   buildChainGrid();
@@ -1195,7 +1249,7 @@ function renderCompare(sl) {
       if (ch[chain] === undefined) return `<div class="cell"><div class="cch">${escapeHtml(chainLabel(chain))}</div><div class="nd">${x.noData}</div></div>`;
       const price = ch[chain], best = price === mp, diff = +(price - mp).toFixed(2);
       return `<div class="cell${best?" best":""}">
-        <div class="cch">${best?`<span style="background:var(--grn);color:#0d1117;padding:1px 6px;border-radius:8px;font-size:.62rem;">${x.cheapest}</span> `:""}${escapeHtml(chainLabel(chain))}</div>
+        <div class="cch">${best?`<span style="background:var(--grn);color:var(--on-acc);padding:1px 6px;border-radius:8px;font-size:.62rem;">${x.cheapest}</span> `:""}${escapeHtml(chainLabel(chain))}</div>
         <div class="cpr">${price} ₪</div>
         ${r.s?`<div style="font-size:.65rem;color:var(--dim)">${escapeHtml(r.s)}</div>`:""}
         ${diff>0?`<div class="cdiff ex">${x.moreExpensive(diff)}</div>`:`<div class="cdiff ch">${x.cheapestLabel}</div>`}
@@ -1357,9 +1411,9 @@ function buildFilterPanels() {
   const brands = [L().catAll, ...Object.entries(brandCounts).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([n])=>n)];
 
   filterContainer.innerHTML =
-    `<div style="color:#aaa;font-size:12px;font-weight:bold;">${L().filterCategories}</div>
+    `<div style="color:var(--muted);font-size:12px;font-weight:bold;">${L().filterCategories}</div>
      <div id="cat-crumbs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-     <div style="color:#aaa;font-size:12px;font-weight:bold;margin-top:5px;">${L().filterBrands}</div>
+     <div style="color:var(--muted);font-size:12px;font-weight:bold;margin-top:5px;">${L().filterBrands}</div>
      <div id="brand-crumbs" style="display:flex;flex-wrap:wrap;gap:6px;"></div>`;
 
   const catEl = document.getElementById("cat-crumbs");
@@ -1399,7 +1453,7 @@ function renderResults() {
   if (!resEl) return;
   const x = L();
   if (!basket.length) {
-    resEl.innerHTML = `<div style="color:#aaa;padding:10px;">${x.basketEmpty}</div>`;
+    resEl.innerHTML = `<div style="color:var(--muted);padding:10px;">${x.basketEmpty}</div>`;
     return;
   }
 
@@ -1418,7 +1472,7 @@ function renderResults() {
       return true;
     });
     if (!workBasket.length) {
-      resEl.innerHTML = `<div style="color:#aaa;padding:10px;">${x.noItems}</div>`;
+      resEl.innerHTML = `<div style="color:var(--muted);padding:10px;">${x.noItems}</div>`;
       return;
     }
   }
@@ -1479,7 +1533,7 @@ function renderResults() {
       <span class="bh-total">${pick.total.toFixed(2)} ₪</span></div>
       <div style="font-size:.8rem;color:var(--dim);margin-top:4px;">${escapeHtml(coverLabel(pick))}</div>`;
     if (pick.missing && pick.missing.length) {
-      html += `<div style="font-size:.78rem;margin-top:8px;color:#f0ad4e;">${escapeHtml(x.missingItems)}
+      html += `<div style="font-size:.78rem;margin-top:8px;color:var(--orange);">${escapeHtml(x.missingItems)}
         ${pick.missing.map(n => escapeHtml(n)).join("; ")}</div>`;
     }
     if (second && second.found === pick.found) {
@@ -1520,13 +1574,13 @@ function renderResults() {
 
   html += `<h3 style="margin-top:14px;">${x.totalBasket}:</h3>
     <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-    <tr style="border-bottom:2px solid #555;"><th></th><th></th><th></th><th></th></tr>`;
+    <tr style="border-bottom:2px solid var(--hover-brd);"><th></th><th></th><th></th><th></th></tr>`;
   totals.forEach(t => {
     const sumText = t.found > 0 ? `${t.total.toFixed(2)} ₪` : "—";
     const statusText = t.complete
-      ? `<span style="color:#5cb85c;">${x.coverageFull}</span>`
-      : `<span style="color:#f0ad4e;">${x.coveragePartial}</span>`;
-    html += `<tr style="border-bottom:1px solid #3c3c3c;height:35px;">
+      ? `<span style="color:var(--ok);">${x.coverageFull}</span>`
+      : `<span style="color:var(--orange);">${x.coveragePartial}</span>`;
+    html += `<tr style="border-bottom:1px solid var(--row-brd);height:35px;">
       <td><strong>${escapeHtml(chainLabel(t.chain))}</strong></td>
       <td>${sumText}</td>
       <td style="font-size:.8rem;color:var(--dim)">${escapeHtml(coverLabel(t))}</td>
