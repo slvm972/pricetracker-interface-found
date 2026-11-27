@@ -74,6 +74,13 @@ header{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px 20
 .help-panel ol li{margin-bottom:10px;}
 .help-panel .help-tip{font-size:.82rem;color:var(--dim);line-height:1.45;padding:10px 12px;background:var(--surf2);border-radius:8px;margin-bottom:14px;}
 .help-panel .help-close{display:block;width:100%;padding:9px;border:none;border-radius:8px;background:var(--acc);color:var(--on-acc);font-weight:700;cursor:pointer;font-family:inherit;font-size:.9rem;}
+.fb-text{font-size:.88rem;line-height:1.55;color:var(--txt);margin:0 0 12px 0;}
+.fb-mail{font-size:1rem;font-weight:700;color:var(--txt);background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;margin:0 0 12px 0;text-align:center;direction:ltr;user-select:all;word-break:break-all;}
+.fb-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px 0;}
+.fb-write,.fb-copy{flex:1 1 150px;text-align:center;padding:9px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-a10);color:var(--acc);font-weight:600;font-size:.86rem;cursor:pointer;font-family:inherit;text-decoration:none;}
+.fb-write:hover,.fb-copy:hover{background:var(--acc-a12);}
+.site-foot{max-width:900px;margin:28px auto 22px;padding:14px 20px 0;border-top:1px solid var(--brd);text-align:center;font-size:.76rem;line-height:1.55;color:var(--dim);}
+.site-foot a{color:var(--acc);cursor:pointer;text-decoration:underline;margin-inline-start:6px;white-space:nowrap;}
 .help-flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-bottom:16px;font-size:.8rem;color:var(--dim);}
 .help-flow span{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:4px 8px;color:var(--txt);}
 .help-sec{margin:0 0 14px 0;padding-bottom:12px;border-bottom:1px solid var(--brd);}
@@ -215,6 +222,7 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
   </div>
   <button type="button" class="theme-btn" id="theme-btn"></button>
   <button type="button" class="help-btn" id="help-btn" data-t="helpBtn">Как пользоваться?</button>
+  <button type="button" class="help-btn" id="fb-btn" data-t="feedbackBtn">Обратная связь</button>
   <nav class="nav-modes">
     <button type="button" class="nav-btn on" id="nav-catalog" data-t="navCatalog">Каталог</button>
     <button type="button" class="nav-btn" id="nav-basket" data-t="navBasket">Корзина<span class="basket-badge hidden" id="basket-badge">0</span></button>
@@ -286,6 +294,25 @@ h2 small{font-weight:400;color:var(--dim);font-size:.78rem;margin-inline-start:6
   <div class="results" id="results"></div>
 </div>
 
+
+<footer class="site-foot">
+  <span data-t="footNote">Цены взяты из публичных прайс-листов, которые магазины публикуют сами; цена на полке и на кассе может отличаться.</span>
+  <a id="foot-fb" role="button" tabindex="0" data-t="feedbackBtn">Обратная связь</a>
+</footer>
+
+<div id="fb-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+  <div class="help-panel">
+    <h3 id="fb-title" data-t="feedbackTitle">Обратная связь</h3>
+    <p class="fb-text" data-t="feedbackText">Нашли неверную цену, не хватает сети или товара, есть идея или вопрос? Напишите нам.</p>
+    <div class="fb-mail" id="fb-addr"></div>
+    <div class="fb-actions">
+      <a class="fb-write" id="fb-write" href="#" data-t="feedbackWrite">Написать письмо</a>
+      <button type="button" class="fb-copy" id="fb-copy" data-t="feedbackCopy">Копировать адрес</button>
+    </div>
+    <div class="help-tip" data-t="feedbackNote">Не присылайте личные данные.</div>
+    <button type="button" class="help-close" id="fb-close" data-t="helpClose">Закрыть</button>
+  </div>
+</div>
 
 <div id="help-overlay" class="help-overlay hidden" role="dialog" aria-modal="true">
   <div class="help-panel" id="help-panel">
@@ -423,6 +450,13 @@ const LANG = {
     dataUpdated: "הנתונים עודכנו",
     helpBtn: "איך משתמשים?",
     themeToLight: "מעבר לערכת נושא בהירה", themeToDark: "מעבר לערכת נושא כהה", themeLightName: "ערכה בהירה", themeDarkName: "ערכה כהה",
+    feedbackBtn: "משוב", feedbackTitle: "משוב ויצירת קשר",
+    feedbackText: "מצאתם מחיר שגוי, רשת או מוצר שחסרים, או שיש לכם רעיון או שאלה? כתבו לנו. אם מדובר במחיר, ציינו את שם המוצר ואת הרשת.",
+    feedbackWrite: "כתיבת מייל", feedbackCopy: "העתקת הכתובת", feedbackCopied: "הכתובת הועתקה",
+    feedbackNote: "אל תשלחו תעודות זהות, פרטי תשלום או מידע אישי אחר. אנחנו קוראים כל הודעה, אך איננו מבטיחים מענה מיידי.",
+    footNote: "המחירים נלקחים ממחירונים ציבוריים שהחנויות מפרסמות בעצמן; המחיר על המדף או בקופה עשוי להיות שונה.",
+    feedbackSubject: "Price Tracker: משוב",
+    feedbackBody: "שלום!\n\nנושא (מחיר שגוי / חסרה רשת או מוצר / תקלה באתר / הצעה):\n\nהמוצר או הרשת:\n\nההודעה:\n",
     helpTitle: "עזרה — Price Tracker",
     helpFlow1: "① קטלוג",
     helpFlow2: "② הוספה",
@@ -504,6 +538,13 @@ const LANG = {
     dataUpdated: "Данные обновлены",
     helpBtn: "Как пользоваться?",
     themeToLight: "Переключить на светлую тему", themeToDark: "Переключить на тёмную тему", themeLightName: "Светлая тема", themeDarkName: "Тёмная тема",
+    feedbackBtn: "Обратная связь", feedbackTitle: "Обратная связь",
+    feedbackText: "Нашли неверную цену, не хватает сети или товара, есть идея или вопрос? Напишите нам. Если речь о цене, укажите название товара и сеть.",
+    feedbackWrite: "Написать письмо", feedbackCopy: "Копировать адрес", feedbackCopied: "Адрес скопирован",
+    feedbackNote: "Не присылайте паспортные, платёжные и другие личные данные. Мы читаем все сообщения, но быстрый ответ не обещаем.",
+    footNote: "Цены взяты из публичных прайс-листов, которые магазины публикуют сами; цена на полке и на кассе может отличаться.",
+    feedbackSubject: "Price Tracker: обратная связь",
+    feedbackBody: "Здравствуйте!\n\nТема (неверная цена / нет сети или товара / ошибка сайта / предложение):\n\nТовар или сеть:\n\nСообщение:\n",
     helpTitle: "Справка — Price Tracker",
     helpFlow1: "① Каталог",
     helpFlow2: "② Добавить",
@@ -585,6 +626,13 @@ const LANG = {
     dataUpdated: "Data updated",
     helpBtn: "How to use?",
     themeToLight: "Switch to light theme", themeToDark: "Switch to dark theme", themeLightName: "Light theme", themeDarkName: "Dark theme",
+    feedbackBtn: "Feedback", feedbackTitle: "Feedback",
+    feedbackText: "Found a wrong price, a missing chain or product, or have an idea or a question? Write to us. For a price issue, please name the product and the chain.",
+    feedbackWrite: "Write an email", feedbackCopy: "Copy address", feedbackCopied: "Address copied",
+    feedbackNote: "Please do not send ID, payment or other personal data. We read every message but cannot promise an immediate reply.",
+    footNote: "Prices come from public price lists that the stores publish themselves; the shelf or checkout price may differ.",
+    feedbackSubject: "Price Tracker: feedback",
+    feedbackBody: "Hello!\n\nTopic (wrong price / missing chain or product / site problem / suggestion):\n\nProduct or chain:\n\nMessage:\n",
     helpTitle: "Help — Price Tracker",
     helpFlow1: "① Catalog",
     helpFlow2: "② Add items",
@@ -1673,6 +1721,58 @@ function openHelp() {
 function closeHelp() {
   document.getElementById("help-overlay").classList.add("hidden");
 }
+// --- Обратная связь: адрес собирается здесь, а не лежит в разметке открытым текстом ---
+const FB_USER = "slvm97238", FB_DOM = "gmail.com";
+function fbAddr() { return FB_USER + "@" + FB_DOM; }
+function openFeedback() {
+  const x = L();
+  const addr = fbAddr();
+  document.getElementById("fb-addr").textContent = addr;
+  document.getElementById("fb-write").href = "mailto:" + addr +
+    "?subject=" + encodeURIComponent(x.feedbackSubject || "") +
+    "&body=" + encodeURIComponent(x.feedbackBody || "");
+  document.getElementById("fb-overlay").classList.remove("hidden");
+}
+function closeFeedback() {
+  document.getElementById("fb-overlay").classList.add("hidden");
+}
+function copyFeedbackAddr() {
+  const x = L();
+  const btn = document.getElementById("fb-copy");
+  const done = () => {
+    btn.textContent = x.feedbackCopied || "OK";
+    setTimeout(() => { btn.textContent = L().feedbackCopy; }, 2000);
+  };
+  const fallback = () => {
+    try {
+      const r = document.createRange();
+      r.selectNodeContents(document.getElementById("fb-addr"));
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(r);
+      document.execCommand("copy");
+      done();
+    } catch (e) { /* адрес выделен, пользователь скопирует вручную */ }
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(fbAddr()).then(done, fallback);
+    } else { fallback(); }
+  } catch (e) { fallback(); }
+}
+document.getElementById("fb-btn").onclick = openFeedback;
+document.getElementById("foot-fb").onclick = openFeedback;
+document.getElementById("foot-fb").addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFeedback(); }
+});
+document.getElementById("fb-close").onclick = closeFeedback;
+document.getElementById("fb-copy").onclick = copyFeedbackAddr;
+document.getElementById("fb-overlay").addEventListener("click", e => {
+  if (e.target.id === "fb-overlay") closeFeedback();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeFeedback();
+});
+
 document.getElementById("help-btn").onclick = openHelp;
 document.getElementById("help-close").onclick = closeHelp;
 document.getElementById("help-overlay").addEventListener("click", e => {
